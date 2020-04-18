@@ -1,2 +1,5 @@
 /core/.idea
 /core/venv
+/gui/package-lock.json
+/core/src/__pycache__
+/core/src/*.log

@@ -1,46 +1,65 @@
+import sys
+import logging
 from PIL import Image
-import numpy
-from blend_modes import soft_light
+import numpy as np
+
+from blackwhite import BlackWhite
 
 
 class MangaPrettierCore(object):
 
     def __init__(self):
-        pass
+        self.logger = logging.getLogger("MangaPrettierCore")
+        formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
+        file_handler = logging.FileHandler("core.log")
+        file_handler.setFormatter(formatter)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.formatter = formatter
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
+        self.logger.setLevel(logging.DEBUG)
 
-    def set_args_from_tool(self, tool_args_str):
-        pass
+    def run(self, param):
 
-    def run(self):
-        print('hello')
-        # Import background image
-        background_img_raw = Image.open('I:\\work\\WORK\\temp\\12.png')  # RGBA image
-        background_img = numpy.array(background_img_raw)  # Inputs to blend_modes need to be numpy arrays.
-        background_img_float = background_img.astype(float)  # Inputs to blend_modes need to be floats.
+        try:
+            image_src = param['src']
+            image = np.array(Image.open(image_src))
 
-        # Import foreground image
-        foreground_img_raw = Image.open('I:\\work\\WORK\\temp\\white.png')  # RGBA image
-        foreground_img = numpy.array(foreground_img_raw)  # Inputs to blend_modes need to be numpy arrays.
-        foreground_img_float = foreground_img.astype(float)  # Inputs to blend_modes need to be floats.
+            h, w, layers = image.shape
+            if layers == 3:
+                image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
 
-        # Blend images
-        opacity = 0.7  # The opacity of the foreground that is blended onto the background is 70 %.
-        blended_img_float = soft_light(background_img_float, foreground_img_float, opacity)
+            self.logger.debug(image)
+            self.logger.debug(image.shape)
 
-        # Convert blended image back into PIL image
-        blended_img = numpy.uint8(blended_img_float)  # Image needs to be converted back to uint8 type for PIL handling.
-        blended_img_raw = Image.fromarray(
-            blended_img)  # Note that alpha channels are displayed in black by PIL by default.
-        # This behavior is difficult to change (although possible).
-        # If you have alpha channels in your images, then you should give
-        # OpenCV a try.
+            mode = MangaPrettierCore.ModeDict[param['type']]
 
-        # Display blended image
-        blended_img_raw.show()
+            for config in param['effects']:
+                image = mode.run(image, config, param['show'])
+
+            return image
+
+        except Exception as exc:
+            self.logger.error('exception = %s', exc, exc_info=True)
+            return None
+
+    ModeDict = {
+        'bw': BlackWhite
+    }
 
 
 if __name__ == "__main__":
 
+    param = {
+        'type': 'bw',
+        'src': 'I:\\work\\WORK\\temp\\12.jpg',
+        'effects': [
+            {'mode': 'soft_light', 'opacity': .8},
+            {'mode': 'soft_light', 'opacity': .8},
+            {'mode': 'soft_light', 'opacity': .8}
+        ],
+        'show': True
+    }
     core = MangaPrettierCore()
-    core.run()
+    core.run(param)
 
