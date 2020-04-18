@@ -2,6 +2,9 @@
   "name": "MangaPrettier",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "description": "MangaPrettier",
+  "author": "zmcx16 <zmcx16@gmail.com>",
   "devDependencies": {
     "foreman": "^2.0.0",
     "react-scripts": "3.4.1",
@@ -13,21 +16,52 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "detect-port": "^1.3.0",
+    "electron-is-dev": "^1.2.0",
+    "fibers": "^4.0.2",
+    "node-sass": "^4.13.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1",
+    "sass": "^1.26.3",
+    "typescript": "^3.8.3",
     "zerorpc": "^0.9.8"
   },
   "homepage": "./",
-  "main": "src/electron-starter.js",
+  "main": "public/electron.js",
   "scripts": {
     "start": "nf start -p 3000",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "electron": "electron .",
-    "electron-start": "node src/electron-wait-react",
-    "react-start": "react-scripts start"
+    "react-start": "react-scripts start",
+    "electron-start": "node public/electron-wait-react",
+    "build-dir": "electron-builder --dir",
+    "build-win": "electron-builder --win",
+    "build-linux": "electron-builder --linux",
+    "preelectron-pack": "npm run build"
+  },
+  "build": {
+    "productName": "MangaPrettier",
+    "appId": "com.electron.MangaPrettier-com-app",
+    "copyright": "© 2019 zmcx16",
+    "compression": "maximum",
+    "asar": false,
+    "directories": {
+      "buildResources": "assets"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "icon": "MangaPrettier.ico",
+      "target": "nsis",
+      "legalTrademarks": "zmcx16"
+    },
+    "linux": {
+      "icon": "MangaPrettier256x256.png"
+    }
   },
   "eslintConfig": {
     "extends": "react-app"
