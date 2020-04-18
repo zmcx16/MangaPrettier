@@ -5,16 +5,39 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 const isDev = require('electron-is-dev');
+const os = require('os');
+const fs = require('fs');
 const path = require('path');
-const url = require('url');
+const child_process = require('child_process');
+const detect_port = require('detect-port');
+
+const app_path = app.getAppPath();
+const platform = os.platform();
+let port = -1;
+let core_proc = null;
+var root_path = '';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
 function createWindow() {
+
+    // OnStart
+    if (app_path.indexOf('default_app.asar') != -1)  //dev mode
+        root_path = path.resolve(path.dirname(app_path), '..', '..', '..', '..');
+    else  //binary mode
+        root_path = path.resolve(path.dirname(app_path), '..');
+
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new BrowserWindow({
+        width: 1024, 
+        height: 600,
+        icon: path.join(__dirname, 'MangaPrettier.png'),
+        webPreferences: {
+            nodeIntegration: true
+        }
+    });
 
     // and load the index.html of the app.
     mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
@@ -29,6 +52,50 @@ function createWindow() {
         // when you should delete the corresponding element.
         mainWindow = null
     })
+
+    // for core process
+    let port_candidate = 7777;
+    detect_port(port_candidate, (err, _port) => {
+        if (err) {
+            console.log(err);
+        }
+
+        if (port_candidate === _port) {
+            console.log(`port: ${port_candidate} was not occupied`);
+            port = port_candidate;
+        } else {
+            console.log(`port: ${port_candidate} was occupied, try port: ${_port}`);
+            port = _port;
+        }
+
+        /*
+        // test
+        var args = {};
+        args['port'] = port.toString();
+
+        if (platform === 'linux') {
+            const homedir = os.homedir();
+            args['root_path'] = path.join(homedir, '.MangaPrettier');
+        } else {
+            args['root_path'] = root_path;
+        }
+
+        console.log('platform:' + platform, ', dir path:' + __dirname);
+        let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py');
+        if (!fs.existsSync(script)) {
+            if (platform === 'win32') {
+                script = path.join(__dirname, 'core-win', 'mpcore.exe');
+            } else if (platform === 'linux') {
+                script = path.join(__dirname, 'core-linux', 'mpcore');
+            }
+            core_proc = child_process.execFile(script, ['-args', JSON.stringify(args)]);
+
+        } else {
+            core_proc = child_process.spawn('python', [script, '-args', JSON.stringify(args)]);
+        }
+        */
+    });
+
 }
 
 // This method will be called when Electron has finished
@@ -45,6 +112,10 @@ app.on('window-all-closed', function () {
     }
 });
 
+app.on('will-quit', () => {
+    killCore();
+});
+
 app.on('activate', function () {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -53,5 +124,30 @@ app.on('activate', function () {
     }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+// common function
+function walkSync(dir, filelist) {
+    var path = path || require('path');
+    var fs = fs || require('fs'), files = fs.readdirSync(dir);
+    filelist = filelist || [];
+    files.forEach(function (file) {
+        if (fs.statSync(path.join(dir, file)).isDirectory()) {
+            filelist = walkSync(path.join(dir, file), filelist);
+        }
+        else {
+            filelist.push(path.join(dir, file));
+        }
+    });
+    return filelist;
+}
+
+function quitAll() {
+    app.quit();
+    app.exit(0);
+}
+
+function killCore() {
+    console.log('kill core process');
+    if (core_proc)
+        core_proc.kill();
+    core_proc = null;
+}

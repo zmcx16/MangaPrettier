@@ -4,3 +4,4 @@
 /core/src/__pycache__
 /core/src/*.log
 /gui/dist
+/gui/*.log
