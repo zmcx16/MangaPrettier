@@ -1,27 +1,26 @@
 import sys
+import argparse
 import logging
 from PIL import Image
 import numpy as np
+import base64
+import zerorpc
 
 from blackwhite import BlackWhite
 
 
 class MangaPrettierCore(object):
 
-    def __init__(self):
-        self.logger = logging.getLogger("MangaPrettierCore")
-        formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
-        file_handler = logging.FileHandler("core.log")
-        file_handler.setFormatter(formatter)
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.formatter = formatter
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
-        self.logger.setLevel(logging.DEBUG)
+    logger = None
 
-    def run(self, param):
+    def __init__(self, mplogger):
+        self.logger = mplogger
+
+    def runTask(self, param):
 
         try:
+            self.logger.info('runTask start, param: ' + str(param))
+
             image_src = param['src']
             image = np.array(Image.open(image_src))
 
@@ -29,15 +28,16 @@ class MangaPrettierCore(object):
             if layers == 3:
                 image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
 
-            self.logger.debug(image)
-            self.logger.debug(image.shape)
+            #self.logger.debug(image)
+            #self.logger.debug(image.shape)
 
             mode = MangaPrettierCore.ModeDict[param['type']]
 
             for config in param['effects']:
                 image = mode.run(image, config, param['show'])
 
-            return image
+            self.logger.info('runTask end')
+            return {'ret': 0, 'img': base64.b64encode(image)}
 
         except Exception as exc:
             self.logger.error('exception = %s', exc, exc_info=True)
@@ -50,5 +50,25 @@ class MangaPrettierCore(object):
 
 if __name__ == "__main__":
 
-    print('hello')
+    logger = logging.getLogger("MangaPrettierCore")
+    formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
+    file_handler = logging.FileHandler("core.log")
+    file_handler.setFormatter(formatter)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.formatter = formatter
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.DEBUG)
+    try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-port", dest="port")
+        args = parser.parse_args()
+        if args.port:
+            s = zerorpc.Server(MangaPrettierCore(logger))
+            s.bind("tcp://0.0.0.0:" + args.port)
+            s.run()
+        else:
+            logger.error('Need assign port.')
 
+    except Exception as exc:
+        logger.error('exception = %s', exc, exc_info=True)

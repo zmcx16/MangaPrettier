@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
 const detect_port = require('detect-port');
+const ipc = electron.ipcMain;
 
 const app_path = app.getAppPath();
 const platform = os.platform();
@@ -68,18 +69,7 @@ function createWindow() {
             port = _port;
         }
 
-        /*
-        // test
-        var args = {};
-        args['port'] = port.toString();
-
-        if (platform === 'linux') {
-            const homedir = os.homedir();
-            args['root_path'] = path.join(homedir, '.MangaPrettier');
-        } else {
-            args['root_path'] = root_path;
-        }
-
+        
         console.log('platform:' + platform, ', dir path:' + __dirname);
         let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py');
         if (!fs.existsSync(script)) {
@@ -88,12 +78,12 @@ function createWindow() {
             } else if (platform === 'linux') {
                 script = path.join(__dirname, 'core-linux', 'mpcore');
             }
-            core_proc = child_process.execFile(script, ['-args', JSON.stringify(args)]);
+            core_proc = child_process.execFile(script, ['-port', port]);
 
         } else {
-            core_proc = child_process.spawn('python', [script, '-args', JSON.stringify(args)]);
+            core_proc = child_process.spawn('python', [script, '-port', port]);
         }
-        */
+
     });
 
 }
@@ -151,3 +141,8 @@ function killCore() {
         core_proc.kill();
     core_proc = null;
 }
+
+// ipc register
+ipc.on('getPort', (event) => {
+    event.sender.send('getPort_callback', port);
+});

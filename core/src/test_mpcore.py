@@ -1,11 +1,13 @@
 import os
+import sys
 import pathlib
+import logging
 from assertpy import assert_that
 
 from mpcore import MangaPrettierCore
 
 
-def test_soft_light(show=False):
+def test_soft_light(logger, show=False):
 
     param = {
         'type': 'bw',
@@ -18,11 +20,11 @@ def test_soft_light(show=False):
         'show': show
     }
 
-    core = MangaPrettierCore()
-    assert_that(core.run(param)).is_not_none()
+    core = MangaPrettierCore(logger)
+    assert_that(core.runTask(param)).is_not_none()
 
 
-def test_multiply(show=False):
+def test_multiply(logger, show=False):
 
     param = {
         'type': 'bw',
@@ -34,11 +36,21 @@ def test_multiply(show=False):
         ],
         'show': show
     }
-    core = MangaPrettierCore()
-    assert_that(core.run(param)).is_not_none()
+    core = MangaPrettierCore(logger)
+    assert_that(core.runTask(param)).is_not_none()
 
 
 if __name__ == "__main__":
 
-    # test_soft_light(True)
-    test_multiply(True)
+    logger = logging.getLogger("MangaPrettierCore")
+    formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
+    file_handler = logging.FileHandler("core.log")
+    file_handler.setFormatter(formatter)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.formatter = formatter
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.DEBUG)
+
+    # test_soft_light(logger, True)
+    test_multiply(logger, True)
