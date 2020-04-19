@@ -1,6 +1,6 @@
 from PIL import Image
 import numpy as np
-from blend_modes import soft_light
+from blend_modes import soft_light, multiply
 
 
 class BlackWhite(object):
@@ -35,5 +35,6 @@ class BlackWhite(object):
         return blended_img
 
     EffectFunc = {
-        'soft_light': soft_light
+        'soft_light': soft_light,
+        'multiply': multiply
     }

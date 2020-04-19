@@ -5,3 +5,8 @@
 /core/src/*.log
 /gui/dist
 /gui/*.log
+/core/src/.pytest_cache
+/core/src/.cache
+/core/src/build
+/core/src/dist
+/core/src/mpcore.spec

@@ -50,16 +50,5 @@ class MangaPrettierCore(object):
 
 if __name__ == "__main__":
 
-    param = {
-        'type': 'bw',
-        'src': 'I:\\work\\WORK\\temp\\12.jpg',
-        'effects': [
-            {'mode': 'soft_light', 'opacity': .8},
-            {'mode': 'soft_light', 'opacity': .8},
-            {'mode': 'soft_light', 'opacity': .8}
-        ],
-        'show': True
-    }
-    core = MangaPrettierCore()
-    core.run(param)
+    print('hello')
 
