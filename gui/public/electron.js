@@ -25,7 +25,7 @@ let mainWindow;
 function createWindow() {
 
     // OnStart
-    if (app_path.indexOf('default_app.asar') != -1)  //dev mode
+    if (app_path.indexOf('default_app.asar') !== -1)  //dev mode
         root_path = path.resolve(path.dirname(app_path), '..', '..', '..', '..');
     else  //binary mode
         root_path = path.resolve(path.dirname(app_path), '..');
@@ -72,6 +72,10 @@ function createWindow() {
         
         console.log('platform:' + platform, ', dir path:' + __dirname);
         let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py');
+
+        //script = path.join(path.resolve(__dirname, '..'), 'core-win', 'mpcore.exe');
+        //core_proc = child_process.execFile(script, ['-port', port]);
+
         if (!fs.existsSync(script)) {
             if (platform === 'win32') {
                 script = path.join(__dirname, 'core-win', 'mpcore.exe');
@@ -83,7 +87,7 @@ function createWindow() {
         } else {
             core_proc = child_process.spawn('python', [script, '-port', port]);
         }
-
+        
     });
 
 }

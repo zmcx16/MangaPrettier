@@ -16,10 +16,20 @@ class MangaPrettierCore(object):
     def __init__(self, mplogger):
         self.logger = mplogger
 
-    def runTask(self, param):
+    def test_connect(self, param):
 
         try:
-            self.logger.info('runTask start, param: ' + str(param))
+            self.logger.info('do testConnect')
+            return {'ret': 0}
+
+        except Exception as e:
+            self.logger.error('exception = %s', e, exc_info=True)
+            return None
+
+    def run_task(self, param):
+
+        try:
+            self.logger.info('run_task start, param: ' + str(param))
 
             image_src = param['src']
             image = np.array(Image.open(image_src))
@@ -36,11 +46,11 @@ class MangaPrettierCore(object):
             for config in param['effects']:
                 image = mode.run(image, config, param['show'])
 
-            self.logger.info('runTask end')
+            self.logger.info('run_task end')
             return {'ret': 0, 'img': base64.b64encode(image)}
 
-        except Exception as exc:
-            self.logger.error('exception = %s', exc, exc_info=True)
+        except Exception as e:
+            self.logger.error('exception = %s', e, exc_info=True)
             return None
 
     ModeDict = {
