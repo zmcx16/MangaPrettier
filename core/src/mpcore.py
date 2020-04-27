@@ -5,6 +5,7 @@ from PIL import Image
 import numpy as np
 import base64
 import zerorpc
+import io
 
 from blackwhite import BlackWhite
 
@@ -46,8 +47,14 @@ class MangaPrettierCore(object):
             for config in param['effects']:
                 image = mode.run(image, config, param['show'])
 
+            image = Image.fromarray(image.astype('uint8'), 'RGB')
+            with io.BytesIO() as output:
+                image.save(output, format='jpeg')
+                img_arr = output.getvalue()
+
             self.logger.info('run_task end')
-            return {'ret': 0, 'img': base64.b64encode(image)}
+            #print(base64.encodebytes(img_arr).decode('ascii'))
+            return {'ret': 0, 'img': base64.encodebytes(img_arr).decode('ascii')}
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)

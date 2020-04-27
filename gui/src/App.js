@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
 import logo from './logo.svg';
 
-import CoreStatus from './components/CoreStatus'
-import './App.css';
+import CoreStatus from './components/coreStatus'
+import PreviewImage from './components/previewImage'
+import { sendCmdToCore } from './common/utils'
+import './App.css'
 
 const electron = window.require('electron')
 const ipc = electron.ipcRenderer
@@ -19,15 +21,6 @@ function App() {
 
   const coreStatusRef = useRef(null);
 
-  // zerorpc function
-  function sendCmdToCore(cmd, msg, callback) {
-    coreStatusRef.current.setStatus(1)
-    //console.log('sendCmdToCore: ' + cmd)
-    client.invoke(cmd, msg, (error, res) => {
-      callback(error, res)
-    })
-  }
-
   // ipc register
   ipc.on('getPort_callback', (event, port) => {
 
@@ -35,10 +28,10 @@ function App() {
 
     client.connect("tcp://127.0.0.1:" + port);
 
-
     //test core communication
     var testConnect = (retry) => {
-      sendCmdToCore('test_connect', null, (error, resp) => {
+
+      sendCmdToCore(client, coreStatusRef, 'test_connect', null, (error, resp) => {
         console.log('retry: ' + retry)
         if (error) {
           console.error(error)
@@ -64,13 +57,15 @@ function App() {
             'show': false
           }
 
-          sendCmdToCore('run_task', param, (error, resp) => {
+          coreStatusRef.current.setStatus(1)
+          sendCmdToCore(client, coreStatusRef, 'run_task', param, (error, resp) => {
             if (error) {
               coreStatusRef.current.setStatus(-1)
               console.error(error)
             } else {
               coreStatusRef.current.setStatus(0)
               console.log(resp)
+              console.log(client)
             }
           })
         }
@@ -93,6 +88,7 @@ function App() {
         Hello Electron!!!
       </p>
       <CoreStatus ref={coreStatusRef} />
+      <PreviewImage client={client} coreStatusRef={coreStatusRef}/>
     </div>
   )
 }

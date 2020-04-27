@@ -21,7 +21,7 @@ def test_soft_light(logger, show=False):
     }
 
     core = MangaPrettierCore(logger)
-    assert_that(core.runTask(param)).is_not_none()
+    assert_that(core.run_task(param)).is_not_none()
 
 
 def test_multiply(logger, show=False):
@@ -30,14 +30,15 @@ def test_multiply(logger, show=False):
         'type': 'bw',
         'src': os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
         'effects': [
-            {'mode': 'multiply', 'opacity': .8},
-            {'mode': 'multiply', 'opacity': .8},
+            #{'mode': 'multiply', 'opacity': .8},
+            #{'mode': 'multiply', 'opacity': .8},
             {'mode': 'multiply', 'opacity': .8}
         ],
         'show': show
     }
     core = MangaPrettierCore(logger)
-    assert_that(core.runTask(param)).is_not_none()
+    assert_that(core.run_task(param)).is_not_none()
+    assert_that(core.run_task(param)).is_not_none()
 
 
 if __name__ == "__main__":
