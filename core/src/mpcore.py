@@ -47,9 +47,9 @@ class MangaPrettierCore(object):
             for config in param['effects']:
                 image = mode.run(image, config, param['show'])
 
-            image = Image.fromarray(image.astype('uint8'), 'RGB')
+            image = Image.fromarray(image)
             with io.BytesIO() as output:
-                image.save(output, format='jpeg')
+                image.save(output, format='png')
                 img_arr = output.getvalue()
 
             self.logger.info('run_task end')

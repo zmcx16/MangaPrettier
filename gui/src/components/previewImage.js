@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { sendCmdToCore } from '../common/utils'
 
-import demoImg from '../images/MangaPrettier1024x1024.png';
-
 const PreviewImage = ({ langFont, client, coreStatusRef }) => {
 
   const [imageNode, setImageNode] = useState()
@@ -33,7 +31,8 @@ const PreviewImage = ({ langFont, client, coreStatusRef }) => {
               coreStatusRef.current.setStatus(0)
               console.log(resp)
               const base64Img = resp['img']
-              setImageNode(<img src={`data:image/jpeg;base64,${base64Img}`} alt='demo'/>)
+              //console.log(base64Img)
+              setImageNode(<img src={`data:image/png;base64,${base64Img}`} alt='demo'/>)
             }
           })
           
