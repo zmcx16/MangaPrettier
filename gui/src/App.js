@@ -8,11 +8,18 @@ import './App.css'
 
 const electron = window.require('electron')
 const ipc = electron.ipcRenderer
+
 const zerorpc = window.require("zerorpc");
+
+// default heartbeatInterval is 5 sec
+// but the HeartbeatError: Lost remote (_heartbeatExpirationTime) is default heartbeatInterval * 2, it causes your CPU bound job always failed.
+// ref: https://stackoverflow.com/questions/31013472/zerorpc-keep-running-process-after-response-is-sent
+// the first command will wait first heartbeatInterval, to enhance the send command, send test command on first to open the stream.
 var client = new zerorpc.Client({
-  //heartbeatInterval: 10 * 1000,
+  heartbeatInterval: 1000,  
   timeout: 120
 });
+
 
 // app config
 const TEST_CONNECT_CNT = 10
@@ -25,15 +32,14 @@ function App() {
   ipc.on('getPort_callback', (event, port) => {
 
     console.log('port: ' + port)
-
     client.connect("tcp://127.0.0.1:" + port);
 
     //test core communication
     var testConnect = (retry) => {
 
-      sendCmdToCore(client, coreStatusRef, 'test_connect', null, (error, resp) => {
+      sendCmdToCore(client, coreStatusRef, {cmd: 'test_connect'}, (error, resp) => {
         console.log('retry: ' + retry)
-        if (error) {
+          if (error) {
           console.error(error)
           if (retry < TEST_CONNECT_CNT) {
             testConnect(retry + 1)
@@ -44,34 +50,11 @@ function App() {
           }
 
         } else {
-          coreStatusRef.current.setStatus(0)
           console.log(resp);
-          var param = {
-            'type': 'bw',
-            'src': 'I:\\work\\WORK\\MangaPrettier\\core\\test-sample\\MachikadoMazoku_02.jpg',
-            'effects': [
-              { 'mode': 'multiply', 'opacity': .8 },
-              { 'mode': 'multiply', 'opacity': .8 },
-              { 'mode': 'multiply', 'opacity': .8 }
-            ],
-            'show': false
-          }
-
-          coreStatusRef.current.setStatus(1)
-          sendCmdToCore(client, coreStatusRef, 'run_task', param, (error, resp) => {
-            if (error) {
-              coreStatusRef.current.setStatus(-1)
-              console.error(error)
-            } else {
-              coreStatusRef.current.setStatus(0)
-              console.log(resp)
-              console.log(client)
-            }
-          })
+          coreStatusRef.current.setStatus(0)
         }
       })
     }
-
     testConnect(0)
 
   })
@@ -88,7 +71,7 @@ function App() {
         Hello Electron!!!
       </p>
       <CoreStatus ref={coreStatusRef} />
-      <PreviewImage client={client} coreStatusRef={coreStatusRef}/>
+      <PreviewImage coreStatusRef={coreStatusRef} client={client} />
     </div>
   )
 }

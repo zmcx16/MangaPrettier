@@ -13,6 +13,7 @@
     "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
+    "@material-ui/core": "^4.9.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -22,11 +23,10 @@
     "node-sass": "^4.13.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-intl": "^3.12.0",
     "sass": "^1.26.3",
     "typescript": "^3.8.3",
-    "zerorpc": "^0.9.8",
-    "@material-ui/core": "^4.9.1",
-    "react-intl": "^3.12.0"
+    "zerorpc": "^0.9.8"
   },
   "homepage": "./",
   "main": "public/electron.js",

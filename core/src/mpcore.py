@@ -6,6 +6,7 @@ import numpy as np
 import base64
 import zerorpc
 import io
+import threading
 
 from blackwhite import BlackWhite
 
@@ -13,11 +14,12 @@ from blackwhite import BlackWhite
 class MangaPrettierCore(object):
 
     logger = None
+    task_dict = {}  # id:{'status': 0, 'img': 'data'}  status: 0: finished, 1: processing, -1: error or not found
 
     def __init__(self, mplogger):
         self.logger = mplogger
 
-    def test_connect(self, param):
+    def __test_connect(self):
 
         try:
             self.logger.info('do testConnect')
@@ -27,7 +29,7 @@ class MangaPrettierCore(object):
             self.logger.error('exception = %s', e, exc_info=True)
             return None
 
-    def run_task(self, param):
+    def __run_task(self, param):
 
         try:
             self.logger.info('run_task start, param: ' + str(param))
@@ -39,8 +41,8 @@ class MangaPrettierCore(object):
             if layers == 3:
                 image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
 
-            #self.logger.debug(image)
-            #self.logger.debug(image.shape)
+            # self.logger.debug(image)
+            # self.logger.debug(image.shape)
 
             mode = MangaPrettierCore.ModeDict[param['type']]
 
@@ -53,12 +55,54 @@ class MangaPrettierCore(object):
                 img_arr = output.getvalue()
 
             self.logger.info('run_task end')
-            #print(base64.encodebytes(img_arr).decode('ascii'))
+            # print(base64.encodebytes(img_arr).decode('ascii'))
             return {'ret': 0, 'img': base64.encodebytes(img_arr).decode('ascii')}
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)
             return None
+
+    def __run_task_thread(self, t_param):
+
+        resp = self.__run_task(t_param['param'])
+
+        if resp is not None and resp['ret'] == 0:
+            self.task_dict[t_param['task_id']] = {'status': 0, 'img': resp['img']}
+        else:
+            self.task_dict[t_param['task_id']] = {'status': -1, 'img': ''}
+
+    def run_task(self, param):
+
+        try:
+            self.logger.info('run_task start, param: ' + str(param))
+
+            if param['cmd'] == 'warm_up' or param['cmd'] == 'test_connect':
+                resp = self.__test_connect()
+
+            elif param['cmd'] == 'run_task':
+                resp =  self.__run_task(param)
+
+            elif param['cmd'] == 'run_task_async':
+                self.task_dict['001'] = {'status': 1, 'img': ''}
+                t_param = {'task_id': '001', 'param': param}
+                t = threading.Thread(target=self.__run_task_thread, args=(t_param,))
+                t.start()
+                resp = {'ret': 0, 'task_id': '001'}
+
+            elif param['cmd'] == 'get_task_result':
+                task_id = param['task_id']
+                if task_id in self.task_dict:
+                    resp = {'ret': self.task_dict[task_id]['status'], 'img': self.task_dict[task_id]['img']}
+                else:
+                    resp = {'ret': -1, 'img': self.task_dict[task_id]['img']}
+
+            self.logger.info('run_task end')
+            return resp
+
+        except Exception as e:
+            self.logger.error('exception = %s', e, exc_info=True)
+            return None
+
 
     ModeDict = {
         'bw': BlackWhite
@@ -84,6 +128,7 @@ if __name__ == "__main__":
             s = zerorpc.Server(MangaPrettierCore(logger))
             s.bind("tcp://0.0.0.0:" + args.port)
             s.run()
+
         else:
             logger.error('Need assign port.')
 
