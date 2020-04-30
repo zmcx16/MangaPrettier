@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import logo from './logo.svg';
 
 import CoreStatus from './components/coreStatus'
@@ -16,7 +16,7 @@ const zerorpc = window.require("zerorpc");
 // ref: https://stackoverflow.com/questions/31013472/zerorpc-keep-running-process-after-response-is-sent
 // the first command will wait first heartbeatInterval, to enhance the send command, send test command on first to open the stream.
 var client = new zerorpc.Client({
-  heartbeatInterval: 1000,  
+  heartbeatInterval: 5000,  
   timeout: 120
 });
 
@@ -27,18 +27,31 @@ const TEST_CONNECT_CNT = 10
 function App() {
 
   const coreStatusRef = useRef(null);
+  const [previewImage, setPreviewImage] = useState()
+   //co nt previewImageConfigRef = useRef()
+    
+  useEffect(() => {
+  // componentDidMount is here!
+  // componentDidUpdate is here!
+
+  var testConnect_interval = null
 
   // ipc register
-  ipc.on('getPort_callback', (event, port) => {
+  ipc.on('getConfig_callback', (event, config) => {
 
-    console.log('port: ' + port)
-    client.connect("tcp://127.0.0.1:" + port);
+    console.log('config: ' + JSON.stringify(config))
 
-    //test core communication
+    // connect to mpcore
+    client.connect("tcp://127.0.0.1:" + config['port']);
+
+    // create component and pass config
+    setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} client={client} config={{preview_timeout: config['preview_timeout']}} />)
+
+    // test core communication
     var testConnect = (retry) => {
 
       sendCmdToCore(client, coreStatusRef, {cmd: 'test_connect'}, (error, resp) => {
-        console.log('retry: ' + retry)
+        //console.log('retry: ' + retry)
           if (error) {
           console.error(error)
           if (retry < TEST_CONNECT_CNT) {
@@ -50,16 +63,22 @@ function App() {
           }
 
         } else {
-          console.log(resp);
-          coreStatusRef.current.setStatus(0)
+          //console.log(resp);
         }
       })
     }
-    testConnect(0)
 
+    testConnect_interval = setInterval(testConnect, 300, 0)
   })
 
-  ipc.send('getPort')
+  ipc.send('getConfig')
+
+  return () => {
+    // componentWillUnmount is here!
+    clearInterval(testConnect_interval)
+  }
+}, [])
+
 
   return (
     <div className="App">
@@ -71,7 +90,7 @@ function App() {
         Hello Electron!!!
       </p>
       <CoreStatus ref={coreStatusRef} />
-      <PreviewImage coreStatusRef={coreStatusRef} client={client} />
+      {previewImage}
     </div>
   )
 }

@@ -1,26 +1,33 @@
-const electron = require('electron');
-// Module to control application life.
-const app = electron.app;
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow;
+// def
+const USER_DATA = 'user_data'
+const CONFIG_FILE_NAME = 'config.json'
 
-const isDev = require('electron-is-dev');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const child_process = require('child_process');
-const detect_port = require('detect-port');
+// Module
+const electron = require('electron')
+const app = electron.app
+const BrowserWindow = electron.BrowserWindow
+
+const isDev = require('electron-is-dev')
+const os = require('os')
+const fs = require('fs')
+const path = require('path')
+const child_process = require('child_process')
+const detect_port = require('detect-port')
 const ipc = electron.ipcMain;
 
-const app_path = app.getAppPath();
-const platform = os.platform();
-let port = -1;
-let core_proc = null;
-var root_path = '';
+const app_path = app.getAppPath()
+const platform = os.platform()
+var core_proc = null
+
+var root_path = ''
+var user_data_path = ''
+
+// render config
+var render_config = {}
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
+var mainWindow;
 
 function createWindow() {
 
@@ -29,6 +36,29 @@ function createWindow() {
         root_path = path.resolve(path.dirname(app_path), '..', '..', '..', '..');
     else  //binary mode
         root_path = path.resolve(path.dirname(app_path), '..');
+
+    if (platform === 'linux') {
+        const homedir = os.homedir();
+        user_data_path = path.join(homedir, '.MangaPrettier', USER_DATA);
+    } else {
+        user_data_path = path.join(root_path, USER_DATA);
+    }
+
+
+    if (!fs.existsSync(user_data_path)) {
+        fs.mkdirSync(user_data_path, { recursive: true });
+    }
+
+    render_config = loadDataSync(CONFIG_FILE_NAME);
+    if (Object.keys(render_config).length === 0) {
+        render_config = {
+            heartbeat: 300,
+            preview_timeout: 30000
+        }
+        //saveDataSync(CONFIG_FILE_NAME, render_config)
+    }
+
+    console.log(render_config)
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
@@ -63,10 +93,10 @@ function createWindow() {
 
         if (port_candidate === _port) {
             console.log(`port: ${port_candidate} was not occupied`);
-            port = port_candidate;
+            render_config['port'] = port_candidate;
         } else {
             console.log(`port: ${port_candidate} was occupied, try port: ${_port}`);
-            port = _port;
+            render_config['port'] = _port;
         }
 
         
@@ -82,10 +112,10 @@ function createWindow() {
             } else if (platform === 'linux') {
                 script = path.join(__dirname, 'core-linux', 'mpcore');
             }
-            core_proc = child_process.execFile(script, ['-port', port]);
+            core_proc = child_process.execFile(script, ['-port', render_config['port']]);
 
         } else {
-            core_proc = child_process.spawn('python', [script, '-port', port]);
+            core_proc = child_process.spawn('python', [script, '-port', render_config['port']]);
         }
         
     });
@@ -134,6 +164,23 @@ function walkSync(dir, filelist) {
     return filelist;
 }
 
+function saveDataSync(file_name, target_data){
+  console.log('save ' + file_name);
+  fs.writeFileSync(path.join(user_data_path, file_name), JSON.stringify(target_data), 'utf8');
+}
+
+function loadDataSync(file_name) {
+  console.log('load ' + file_name);
+  let output = '';
+  let file_path = path.join(user_data_path, file_name);
+  if (fs.existsSync(file_path)) {
+    let data = fs.readFileSync(file_path, 'utf8');
+    output = JSON.parse(data);
+  }
+
+  return output;
+}
+
 function quitAll() {
     app.quit();
     app.exit(0);
@@ -147,6 +194,6 @@ function killCore() {
 }
 
 // ipc register
-ipc.on('getPort', (event) => {
-    event.sender.send('getPort_callback', port);
+ipc.on('getConfig', (event) => {
+    event.sender.send('getConfig_callback', render_config);
 });
