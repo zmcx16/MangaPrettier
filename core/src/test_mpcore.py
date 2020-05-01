@@ -5,71 +5,69 @@ import logging
 import time
 from assertpy import assert_that
 
+from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlackWhiteKey
 from mpcore import MangaPrettierCore
 
 
 def test_soft_light(logger, show=False):
 
     param = {
-        'cmd': 'run_task',
-        'type': 'bw',
-        'src': os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'Yu-Gi-Oh_01.png'),
-        'effects': [
-            {'mode': 'soft_light', 'opacity': .8},
-            {'mode': 'soft_light', 'opacity': .8},
-            {'mode': 'soft_light', 'opacity': .8}
+        CoreTaskKey.COMMAND: CoreTaskCmdKey.RUN_TASK,
+        CoreTaskKey.TYPE: CoreModeKey.BLACK_WHITE,
+        CoreTaskKey.SOURCE: os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'Yu-Gi-Oh_01.png'),
+        CoreTaskKey.EFFECTS: [
+            {CoreModeKey.MODE: BlackWhiteKey.SOFT_LIGHT, BlackWhiteKey.OPACITY: .8},
+            {CoreModeKey.MODE: BlackWhiteKey.SOFT_LIGHT, BlackWhiteKey.OPACITY: .8},
+            {CoreModeKey.MODE: BlackWhiteKey.SOFT_LIGHT, BlackWhiteKey.OPACITY: .8}
         ],
-        'show': show
+        CoreTaskKey.SHOW: show
     }
 
     core = MangaPrettierCore(logger)
-    assert_that(core.run_task(param)).is_not_none()
+    assert_that(core.run_task(param)[CoreTaskKey.RETURN]).is_zero()
 
 
 def test_multiply(logger, show=False):
 
     param = {
-        'cmd': 'run_task',
-        'type': 'bw',
-        'src': os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
-        'effects': [
-            #{'mode': 'multiply', 'opacity': .8},
-            #{'mode': 'multiply', 'opacity': .8},
-            {'mode': 'multiply', 'opacity': .8}
+        CoreTaskKey.COMMAND: CoreTaskCmdKey.RUN_TASK,
+        CoreTaskKey.TYPE: CoreModeKey.BLACK_WHITE,
+        CoreTaskKey.SOURCE: os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
+        CoreTaskKey.EFFECTS: [
+            {CoreModeKey.MODE: BlackWhiteKey.MULTIPLY, BlackWhiteKey.OPACITY: .8}
         ],
-        'show': show
+        CoreTaskKey.SHOW: show
     }
     core = MangaPrettierCore(logger)
-    assert_that(core.run_task(param)).is_not_none()
+    assert_that(core.run_task(param)[CoreTaskKey.RETURN]).is_zero()
 
 
 def test_multiply_async(logger, show=False):
 
     param = {
-        'cmd': 'run_task_async',
-        'type': 'bw',
-        'src': os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
-        'effects': [
-            #{'mode': 'multiply', 'opacity': .8},
-            #{'mode': 'multiply', 'opacity': .8},
-            {'mode': 'multiply', 'opacity': .8}
+        CoreTaskKey.COMMAND: CoreTaskCmdKey.RUN_TASK_ASYNC,
+        CoreTaskKey.TYPE: CoreModeKey.BLACK_WHITE,
+        CoreTaskKey.SOURCE: os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
+        CoreTaskKey.EFFECTS: [
+            {CoreModeKey.MODE: BlackWhiteKey.MULTIPLY, BlackWhiteKey.OPACITY: .8}
         ],
-        'show': show
+        CoreTaskKey.SHOW: show
     }
     core = MangaPrettierCore(logger)
     resp = core.run_task(param)
-    assert_that(resp).is_not_none()
-    assert_that(resp['task_id']).is_not_none()
+    assert_that(resp[CoreTaskKey.RETURN]).is_zero()
+    assert_that(resp[CoreTaskKey.TASK_ID]).is_not_none()
 
     retry_cnt = 30 * 10
     test_result = -1
     while retry_cnt > 0:
-        task_result = core.run_task({'cmd': 'get_task_result', 'task_id': resp['task_id']})
-        if task_result['ret'] == 0:
+        task_result = core.run_task({CoreTaskKey.COMMAND: CoreTaskCmdKey.GET_TASK_RESULT,
+                                     CoreTaskKey.TASK_ID: resp[CoreTaskKey.TASK_ID]})
+        if task_result[CoreTaskKey.RETURN] == 0:
             # print(task_result)
             test_result = 0
             break
-        elif task_result['ret'] == 1:
+        elif task_result[CoreTaskKey.RETURN] == 1:
             # print(task_result)
             time.sleep(0.1)
             retry_cnt -= 1

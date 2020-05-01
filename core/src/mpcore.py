@@ -6,15 +6,18 @@ import numpy as np
 import base64
 import zerorpc
 import io
+import uuid
 import threading
 
 from blackwhite import BlackWhite
+from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
 
 
 class MangaPrettierCore(object):
 
     logger = None
-    task_dict = {}  # id:{'status': 0, 'img': 'data'}  status: 0: finished, 1: processing, -1: error or not found
+    task_dict = {}  # id:{'ret': 0, 'img': 'data'}  ret: 0: finished, 1: processing, -1: exception error
+    task_dict_lock = threading.Lock()
 
     def __init__(self, mplogger):
         self.logger = mplogger
@@ -23,18 +26,18 @@ class MangaPrettierCore(object):
 
         try:
             self.logger.info('do testConnect')
-            return {'ret': 0}
+            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS}
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)
-            return None
+            return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
 
     def __run_task(self, param):
 
         try:
             self.logger.info('run_task start, param: ' + str(param))
 
-            image_src = param['src']
+            image_src = param[CoreTaskKey.SOURCE]
             image = np.array(Image.open(image_src))
 
             h, w, layers = image.shape
@@ -44,10 +47,10 @@ class MangaPrettierCore(object):
             # self.logger.debug(image)
             # self.logger.debug(image.shape)
 
-            mode = MangaPrettierCore.ModeDict[param['type']]
+            mode = MangaPrettierCore.ModeDict[param[CoreTaskKey.TYPE]]
 
-            for config in param['effects']:
-                image = mode.run(image, config, param['show'])
+            for config in param[CoreTaskKey.EFFECTS]:
+                image = mode.run(image, config, param[CoreTaskKey.SHOW])
 
             image = Image.fromarray(image)
             with io.BytesIO() as output:
@@ -56,56 +59,70 @@ class MangaPrettierCore(object):
 
             self.logger.info('run_task end')
             # print(base64.encodebytes(img_arr).decode('ascii'))
-            return {'ret': 0, 'img': base64.encodebytes(img_arr).decode('ascii')}
+            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS, CoreTaskKey.IMAGE: base64.encodebytes(img_arr).decode('ascii')}
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)
-            return None
+            return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
 
     def __run_task_thread(self, t_param):
 
-        resp = self.__run_task(t_param['param'])
+        resp = self.__run_task(t_param[CoreTaskKey.PARAMETER])
 
-        if resp is not None and resp['ret'] == 0:
-            self.task_dict[t_param['task_id']] = {'status': 0, 'img': resp['img']}
+        if resp is not None and resp[CoreTaskKey.RETURN] == 0:
+            self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
+                                                            CoreTaskKey.IMAGE: resp[CoreTaskKey.IMAGE]}
         else:
-            self.task_dict[t_param['task_id']] = {'status': -1, 'img': ''}
+            self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR,
+                                                            CoreTaskKey.IMAGE: ''}
 
     def run_task(self, param):
 
         try:
             self.logger.info('run_task start, param: ' + str(param))
 
-            if param['cmd'] == 'warm_up' or param['cmd'] == 'test_connect':
+            if param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.WARM_UP or \
+                    param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.TEST_CONNECT:
                 resp = self.__test_connect()
 
-            elif param['cmd'] == 'run_task':
-                resp =  self.__run_task(param)
+            elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.RUN_TASK:
+                resp = self.__run_task(param)
 
-            elif param['cmd'] == 'run_task_async':
-                self.task_dict['001'] = {'status': 1, 'img': ''}
-                t_param = {'task_id': '001', 'param': param}
+            elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.RUN_TASK_ASYNC:
+
+                task_id = str(uuid.uuid4())
+                self.task_dict_lock.acquire()
+                self.task_dict[task_id] = {CoreTaskKey.RETURN: CoreReturn.PROCESSING, CoreTaskKey.IMAGE: ''}
+                self.task_dict_lock.release()
+
+                t_param = {CoreTaskKey.TASK_ID: task_id, CoreTaskKey.PARAMETER: param}
                 t = threading.Thread(target=self.__run_task_thread, args=(t_param,))
                 t.start()
-                resp = {'ret': 0, 'task_id': '001'}
+                resp = {CoreTaskKey.RETURN: CoreReturn.SUCCESS, CoreTaskKey.TASK_ID: task_id}
 
-            elif param['cmd'] == 'get_task_result':
-                task_id = param['task_id']
+            elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.GET_TASK_RESULT:
+                task_id = param[CoreTaskKey.TASK_ID]
+
+                self.task_dict_lock.acquire()
                 if task_id in self.task_dict:
-                    resp = {'ret': self.task_dict[task_id]['status'], 'img': self.task_dict[task_id]['img']}
+                    resp = {CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
+                            CoreTaskKey.IMAGE: self.task_dict[task_id][CoreTaskKey.IMAGE]}
+
+                    if self.task_dict[task_id][CoreTaskKey.RETURN] == CoreReturn.SUCCESS:
+                        self.task_dict.pop(task_id, None)
                 else:
-                    resp = {'ret': -1, 'img': self.task_dict[task_id]['img']}
+                    resp = {CoreTaskKey.RETURN: CoreReturn.TASK_NOT_FOUND, CoreTaskKey.IMAGE: ''}
+                self.task_dict_lock.release()
 
             self.logger.info('run_task end')
             return resp
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)
-            return None
-
+            return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
 
     ModeDict = {
-        'bw': BlackWhite
+        CoreModeKey.BLACK_WHITE: BlackWhite
     }
 
 

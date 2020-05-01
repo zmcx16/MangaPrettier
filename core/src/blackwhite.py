@@ -2,12 +2,14 @@ from PIL import Image
 import numpy as np
 from blend_modes import soft_light, multiply
 
+from coredef import CoreModeKey, BlackWhiteKey
+
 
 class BlackWhite(object):
 
     @staticmethod
     def run(image, config, show):
-        return BlackWhite.__do_blend(image, config['mode'], config['opacity'], show)
+        return BlackWhite.__do_blend(image, config[CoreModeKey.MODE], config[BlackWhiteKey.OPACITY], show)
 
     @staticmethod
     def __do_blend(image, mode, opacity, show=False):
@@ -35,6 +37,6 @@ class BlackWhite(object):
         return blended_img
 
     EffectFunc = {
-        'soft_light': soft_light,
-        'multiply': multiply
+        BlackWhiteKey.SOFT_LIGHT: soft_light,
+        BlackWhiteKey.MULTIPLY: multiply
     }

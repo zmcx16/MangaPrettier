@@ -33,7 +33,7 @@ const PreviewImage = ({ langFont, client, coreStatusRef, config }) => {
             } else {
 
                 console.log(resp)
-                
+
                 var getTaskResult = (param_t) => {
 
                     let preview_timeout = param_t['preview_timeout']
