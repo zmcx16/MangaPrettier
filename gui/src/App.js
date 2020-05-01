@@ -45,8 +45,9 @@ function App() {
     client.connect("tcp://127.0.0.1:" + config['port']);
 
     // create component and pass config
-    setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} client={client} config={{preview_timeout: config['preview_timeout']}} />)
+    setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
 
+    /*
     // test core communication
     var testConnect = (retry) => {
 
@@ -63,12 +64,13 @@ function App() {
           }
 
         } else {
-          //console.log(resp);
+          console.log(resp);
         }
       })
     }
 
-    testConnect_interval = setInterval(testConnect, 300, 0)
+    testConnect_interval = setInterval(testConnect, 1000, 0)
+    */
   })
 
   ipc.send('getConfig')
