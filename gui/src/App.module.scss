@@ -1,0 +1,18 @@
+.app {
+  text-align: center;
+}
+
+.settingPanel{
+  border: 1px solid black;
+  height: 200px;
+}
+
+.imagePanel{
+  border: 1px solid black;
+  min-height: 350px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  justify-content: center;
+  margin: 0 10px;
+}

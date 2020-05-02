@@ -3,8 +3,10 @@ import logo from './logo.svg';
 
 import CoreStatus from './components/coreStatus'
 import PreviewImage from './components/previewImage'
-import { sendCmdToCore } from './common/utils'
-import './App.css'
+import FilesPanel from './components/filesPanel'
+import PreviewImagePanel from './components/previewImagePanel'
+
+import appStyle from './App.module.scss'
 
 const electron = window.require('electron')
 const ipc = electron.ipcRenderer
@@ -21,78 +23,50 @@ var client = new zerorpc.Client({
 });
 
 
-// app config
-const TEST_CONNECT_CNT = 10
-
 function App() {
 
   const coreStatusRef = useRef(null);
   const [previewImage, setPreviewImage] = useState()
-   //co nt previewImageConfigRef = useRef()
-    
+
+
+   
+
   useEffect(() => {
   // componentDidMount is here!
   // componentDidUpdate is here!
 
-  var testConnect_interval = null
 
-  // ipc register
-  ipc.on('getConfig_callback', (event, config) => {
+    // ipc register
+    ipc.on('getConfig_callback', (event, config) => {
 
-    console.log('config: ' + JSON.stringify(config))
+      console.log('config: ' + JSON.stringify(config))
+      // connect to mpcore
+      client.connect("tcp://127.0.0.1:" + config['port']);
+      // create component and pass config
+      setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
 
-    // connect to mpcore
-    client.connect("tcp://127.0.0.1:" + config['port']);
+    })
 
-    // create component and pass config
-    setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
+    ipc.send('getConfig')
 
-    /*
-    // test core communication
-    var testConnect = (retry) => {
+    return () => {
+      // componentWillUnmount is here!
 
-      sendCmdToCore(client, coreStatusRef, {cmd: 'test_connect'}, (error, resp) => {
-        //console.log('retry: ' + retry)
-          if (error) {
-          console.error(error)
-          if (retry < TEST_CONNECT_CNT) {
-            testConnect(retry + 1)
-          }
-          else {
-            console.log('retry still failed...')
-            coreStatusRef.current.setStatus(-1)
-          }
-
-        } else {
-          console.log(resp);
-        }
-      })
     }
-
-    testConnect_interval = setInterval(testConnect, 1000, 0)
-    */
-  })
-
-  ipc.send('getConfig')
-
-  return () => {
-    // componentWillUnmount is here!
-    clearInterval(testConnect_interval)
-  }
-}, [])
+  }, [])
 
 
   return (
-    <div className="App">
-      <div className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h2>Welcome to React/Electron</h2>
-      </div>
-      <p className="App-intro">
-        Hello Electron!!!
-      </p>
+    <div className={appStyle.app}>
       <CoreStatus ref={coreStatusRef} />
       {previewImage}
+      <div className={appStyle.settingPanel}>
+        settingPanel
+      </div>
+      <div className={appStyle.imagePanel}>
+        <FilesPanel />
+        <PreviewImagePanel />
+      </div>
     </div>
   )
 }

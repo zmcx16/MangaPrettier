@@ -1,0 +1,10 @@
+.filesPanel{
+  border: 1px solid black;
+}
+
+.toolBar{
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 30px;
+  margin: 10px;
+}
