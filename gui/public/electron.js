@@ -25,6 +25,7 @@ var user_data_path = ''
 // render config
 var render_config = {}
 
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 var mainWindow;
@@ -103,14 +104,11 @@ function createWindow() {
         console.log('platform:' + platform, ', dir path:' + __dirname);
         let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py');
 
-        //script = path.join(path.resolve(__dirname, '..'), 'core-win', 'mpcore.exe');
-        //core_proc = child_process.execFile(script, ['-port', port]);
-
         if (!fs.existsSync(script)) {
             if (platform === 'win32') {
-                script = path.join(__dirname, 'core-win', 'mpcore.exe');
+                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore.exe');
             } else if (platform === 'linux') {
-                script = path.join(__dirname, 'core-linux', 'mpcore');
+                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore');
             }
             core_proc = child_process.execFile(script, ['-port', render_config['port']]);
 

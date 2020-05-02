@@ -54,6 +54,7 @@
     },
     "files": [
       "build/**/*",
+	  "core/**/*",
       "node_modules/**/*"
     ],
     "win": {
