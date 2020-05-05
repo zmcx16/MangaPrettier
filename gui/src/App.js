@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import logo from './logo.svg';
+import { StylesProvider } from "@material-ui/core/styles"
 
 import CoreStatus from './components/coreStatus'
 import PreviewImage from './components/previewImage'
@@ -57,17 +57,19 @@ function App() {
 
 
   return (
-    <div className={appStyle.app}>
-      <CoreStatus ref={coreStatusRef} />
-      {previewImage}
-      <div className={appStyle.settingPanel}>
-        settingPanel
+    <StylesProvider injectFirst>
+      <div className={appStyle.app}>
+        <CoreStatus ref={coreStatusRef} />
+        {previewImage}
+        <div className={appStyle.settingPanel}>
+          settingPanel
+        </div>
+        <div className={appStyle.imagePanel}>
+          <FilesPanel />
+          <PreviewImagePanel />
+        </div>
       </div>
-      <div className={appStyle.imagePanel}>
-        <FilesPanel />
-        <PreviewImagePanel />
-      </div>
-    </div>
+    </StylesProvider>
   )
 }
 

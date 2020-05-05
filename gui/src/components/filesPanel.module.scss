@@ -8,3 +8,28 @@
   gap: 30px;
   margin: 10px;
 }
+
+.fileList{
+  border: 1px solid black;
+  margin: 10px;
+}
+
+.listItemOdd{
+  background-color: #ffffff;
+}
+
+.listItemEven{
+  background-color: #f7f7f7;
+}
+
+.listItemOdd:hover, 
+.listItemEven:hover{
+  background-color: lightskyblue;
+  cursor: default;
+}
+
+.listDeleteIcon{
+  min-width: 25px;
+  width: 25px;
+  cursor: pointer;
+}
