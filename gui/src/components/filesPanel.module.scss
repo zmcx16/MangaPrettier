@@ -4,8 +4,9 @@
 
 .toolBar{
   display: grid;
-  grid-template-columns: auto auto 1fr;
-  gap: 30px;
+  grid-template-columns: auto 30px auto 1fr 5px auto 20px;
+  justify-items: end;
+  align-items: center;
   margin: 10px;
 }
 
@@ -32,4 +33,9 @@
   min-width: 25px;
   width: 25px;
   cursor: pointer;
+}
+
+.imgCnt{
+  font-size: large;
+  padding-top: 1px;
 }

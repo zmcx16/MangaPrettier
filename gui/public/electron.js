@@ -162,6 +162,20 @@ function walkSync(dir, filelist) {
     return filelist;
 }
 
+function type_check(file_path, filter){
+  var ret = false;
+  filter.some(function (ext) {
+    if (file_path.toLowerCase().indexOf(ext.toLowerCase()) === file_path.length - ext.length) {
+      ret = true;
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  return ret;
+}
+
 function saveDataSync(file_name, target_data){
   console.log('save ' + file_name);
   fs.writeFileSync(path.join(user_data_path, file_name), JSON.stringify(target_data), 'utf8');
@@ -194,4 +208,57 @@ function killCore() {
 // ipc register
 ipc.on('getConfig', (event) => {
     event.sender.send('getConfig_callback', render_config);
+});
+
+
+ipc.on('getImagesInfo', (event, isFolder) => {
+
+  const { dialog } = require('electron')
+  const images_filter_list = ['png', 'bmp', 'jpg']
+  const filter_list = images_filter_list
+  
+  var material_list = [];
+  if (isFolder){
+    var foldlist = dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory', 'multiSelections']
+    });
+
+    if (foldlist){
+      var filelist_temp = [];
+      foldlist.forEach(function (item) {
+        walkSync(item, filelist_temp);
+      });
+
+      var images_cnt = 0
+      filelist_temp.forEach(function (file_path) {
+        if (type_check(file_path, images_filter_list))
+          images_cnt++;
+      });
+
+      foldlist.forEach(function (fold_path) {
+        material_list.push({ 'path': fold_path, 'size': 0, 'type': 'folder', 'images_cnt': images_cnt });
+      });
+    }
+
+  }else{
+    var filelist = dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Image', extensions: filter_list }]
+    });
+
+    if (filelist) {
+      filelist.forEach(function (file_path) {
+        const stats = fs.statSync(file_path);
+        var type = '';
+        if (type_check(file_path, images_filter_list)){
+          type = 'image';
+        }
+
+        material_list.push({ 'path': file_path, 'size': stats.size, 'type': type, 'images_cnt': type === 'image' ? 1 : 0 });
+      });
+    }
+  }
+
+  event.returnValue = material_list;
+  
 });
