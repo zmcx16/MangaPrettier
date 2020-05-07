@@ -15,19 +15,21 @@ import filesPanelStyle from "./filesPanel.module.scss"
 const electron = window.require('electron')
 const ipc = electron.ipcRenderer
 
-function FilesPanel() {
+function FilesPanel({ resizeFileListCallback}) {
 
   const fileList = useRef([])
+  const fileListRef = useRef(null)
+  const panelHeight = useRef(200)
 
-  const renderFileList = ()=>{
-    return <FixedSizeList height={400} width={'100%'} itemSize={46} itemCount={fileList.current.length}>
+  const renderFileList = useCallback(()=>{
+    return <FixedSizeList height={panelHeight.current} width={'auto'} itemSize={46} itemCount={fileList.current.length}>
       {renderRow}
     </FixedSizeList>
-  }
+  }, [panelHeight])
 
   const renderRow = ({ index, style }) => (
     <ListItem button style={style} key={index} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} >
-      <ListItemText primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images_cnt'] + ')'} />
+      <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images_cnt'] + ')'} />
       <ListItemIcon className={filesPanelStyle.listDeleteIcon} onClick={() => {
         fileList.current.splice(index, 1)
         setFileListNodes(renderFileList())
@@ -37,8 +39,12 @@ function FilesPanel() {
     </ListItem>
   )
 
-  const [fileListNodes, setFileListNodes] = useState(renderFileList())
+  resizeFileListCallback.current = () => {
+    panelHeight.current = fileListRef.current.clientHeight
+    setFileListNodes(renderFileList())
+  }
 
+  const [fileListNodes, setFileListNodes] = useState(renderFileList())
 
   return (
     <div className={filesPanelStyle.filesPanel}>
@@ -78,7 +84,7 @@ function FilesPanel() {
           <span className={filesPanelStyle.imgCnt}>X {fileList.current.reduce((acc, cur) => acc + cur['images_cnt'], 0)}</span>
           <div></div>
         </div>
-        <div className={filesPanelStyle.fileList}>
+        <div className={filesPanelStyle.fileList} ref={fileListRef}>
           {fileListNodes}
         </div>
       </MuiThemeProvider>

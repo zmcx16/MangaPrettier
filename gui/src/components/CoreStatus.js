@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl"
 const CoreStatus = forwardRef((props, ref) => {
   const [value, setValue] = useState(-1);
   
-   const setStatus = (status) => {
+  const setStatus = (status) => {
     setValue(status);
   };
 

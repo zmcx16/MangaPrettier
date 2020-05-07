@@ -1,3 +1,10 @@
 .previewImagePanel{
   border: 1px solid black;
+  max-width: 500px;
+}
+
+.imageNode{
+  max-width: inherit;
+  max-height: inherit;
+  overflow-x: auto;
 }

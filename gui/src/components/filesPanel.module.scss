@@ -13,6 +13,8 @@
 .fileList{
   border: 1px solid black;
   margin: 10px;
+  height: fit-content;
+  min-height: 400px;
 }
 
 .listItemOdd{
@@ -27,6 +29,12 @@
 .listItemEven:hover{
   background-color: lightskyblue;
   cursor: default;
+}
+
+.listItemText{
+  white-space: nowrap;
+  overflow-x: hidden;
+  /*text-overflow: ellipsis;*/
 }
 
 .listDeleteIcon{
