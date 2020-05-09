@@ -1,0 +1,22 @@
+.app {
+  text-align: center;
+}
+
+.defaultFont{
+  font-family: '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"';
+}
+
+.settingPanel{
+  border: 1px solid black;
+  height: 200px;
+}
+
+.imagePanel{
+  border: 1px solid black;
+  min-height: 350px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  justify-content: center;
+  margin: 0 10px;
+}
