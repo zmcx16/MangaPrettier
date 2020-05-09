@@ -19,6 +19,6 @@ const CoreStatus = forwardRef((props, ref) => {
      { value === 0 ? 'Ready' : value === 1 ? 'Progressing' : 'Failed'}
     </>
   )
-});
+})
 
 export default CoreStatus

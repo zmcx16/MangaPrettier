@@ -229,14 +229,15 @@ ipc.on('getImagesInfo', (event, isFolder) => {
         walkSync(item, filelist_temp);
       });
 
-      var images_cnt = 0
+      var images = []
       filelist_temp.forEach(function (file_path) {
-        if (type_check(file_path, images_filter_list))
-          images_cnt++;
+        if (type_check(file_path, images_filter_list)){
+          images.push(file_path)
+        }
       });
 
       foldlist.forEach(function (fold_path) {
-        material_list.push({ 'path': fold_path, 'size': 0, 'type': 'folder', 'images_cnt': images_cnt });
+        material_list.push({ 'path': fold_path, 'size': 0, 'type': 'folder', 'images': images });
       });
     }
 
@@ -254,7 +255,7 @@ ipc.on('getImagesInfo', (event, isFolder) => {
           type = 'image';
         }
 
-        material_list.push({ 'path': file_path, 'size': stats.size, 'type': type, 'images_cnt': type === 'image' ? 1 : 0 });
+        material_list.push({ 'path': file_path, 'size': stats.size, 'type': type, 'images': [file_path]});
       });
     }
   }

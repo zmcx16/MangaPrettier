@@ -3,14 +3,15 @@ import { sendCmdToCore } from '../common/utils'
 
 import previewImagePanelStyle from "./previewImagePanel.module.scss"
 
-function PreviewImagePanel({ client, coreStatusRef, config, renderImageNodeCallback }) {
+function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config }) {
 
   const [imageNode, setImageNode] = useState()
   const task_heartbeat = useRef(0)
 
-  renderImageNodeCallback.current = () => {
+  previewImagePanelRef.current.renderImageNode = (args) => {
 
     //console.log(args)
+    var image_path = args['images'][Math.floor(Math.random() * args['images'].length)]
 
     // sendTaskCmd  
     var sendTaskCmd = () => {
@@ -19,7 +20,7 @@ function PreviewImagePanel({ client, coreStatusRef, config, renderImageNodeCallb
         var param = {
           'cmd': 'run_task_async',
           'type': 'bw',
-          'src': 'I:\\work\\WORK\\MangaPrettier\\core\\test-sample\\MachikadoMazoku_01.jpg',
+          'src': image_path,
           'effects': [
             { 'mode': 'multiply', 'opacity': .8 }
           ],

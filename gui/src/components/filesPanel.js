@@ -15,7 +15,7 @@ import filesPanelStyle from "./filesPanel.module.scss"
 const electron = window.require('electron')
 const ipc = electron.ipcRenderer
 
-function FilesPanel({ resizeFileListCallback}) {
+function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
 
   const fileList = useRef([])
   const fileListRef = useRef(null)
@@ -29,7 +29,11 @@ function FilesPanel({ resizeFileListCallback}) {
 
   const renderRow = ({ index, style }) => (
     <ListItem button style={style} key={index} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} >
-      <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images_cnt'] + ')'} />
+      <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images'].length + ')'} onClick={() => {
+        console.log(fileList.current[index])
+        console.log(previewImagePanelAPI)
+        previewImagePanelAPI.renderImageNode(fileList.current[index])
+      }}/>
       <ListItemIcon className={filesPanelStyle.listDeleteIcon} onClick={() => {
         fileList.current.splice(index, 1)
         setFileListNodes(renderFileList())
@@ -39,7 +43,7 @@ function FilesPanel({ resizeFileListCallback}) {
     </ListItem>
   )
 
-  resizeFileListCallback.current = () => {
+  filesPanelRef.current.resizeFileList = () => {
     panelHeight.current = fileListRef.current.clientHeight
     setFileListNodes(renderFileList())
   }
@@ -81,7 +85,7 @@ function FilesPanel({ resizeFileListCallback}) {
           >Image</Button>
           <ImageIcon color="primary" style={{ fontSize: 28 }} />
           <div></div>
-          <span className={filesPanelStyle.imgCnt}>X {fileList.current.reduce((acc, cur) => acc + cur['images_cnt'], 0)}</span>
+          <span className={filesPanelStyle.imgCnt}>X {fileList.current.reduce((acc, cur) => acc + cur['images'].length, 0)}</span>
           <div></div>
         </div>
         <div className={filesPanelStyle.fileList} ref={fileListRef}>

@@ -29,27 +29,31 @@ function App() {
   const [previewImage, setPreviewImage] = useState()
 
   const [filesPanel, setFilesPanel] = useState()
+  const filesPanelRef = useRef({
+    resizeFileList: null
+  })
+  const filesPanelAPI = {
+    resizeFileList: () => {
+      filesPanelRef.current.resizeFileList()
+    }
+  }
+
+
   const [previewImagePanel, setPreviewImagePanel] = useState()
-  
-  const resizeFileListCallback = useRef(null)
-  const renderImageNodeCallback = useRef(null)
-
-  const resizeFileList = () => {
-    resizeFileListCallback.current()
+  const previewImagePanelRef = useRef({
+    renderImageNode: null
+  })
+  const previewImagePanelAPI = {
+    renderImageNode: (args) => {
+      previewImagePanelRef.current.renderImageNode(args)
+    }
   }
-
-  const renderImageNode = () => {
-    renderImageNodeCallback.current()
-  }
-
-
-
 
   useEffect(() => {
   // componentDidMount is here!
   // componentDidUpdate is here!
 
-    setFilesPanel(<FilesPanel resizeFileListCallback={resizeFileListCallback} />)
+    setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} />)
 
     // ipc register
     ipc.on('getConfig_callback', (event, config) => {
@@ -60,9 +64,9 @@ function App() {
       // create component and pass config
       //setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
 
-      setPreviewImagePanel(<PreviewImagePanel client={client} coreStatusRef={coreStatusRef} config={{ preview_timeout: config['preview_timeout'] }} renderImageNodeCallback={renderImageNodeCallback} />)
+      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} client={client} coreStatusRef={coreStatusRef} config={{ preview_timeout: config['preview_timeout'] }} />)
 
-      resizeFileList()
+      filesPanelAPI.resizeFileList()
     })
 
     ipc.send('getConfig')
@@ -79,12 +83,6 @@ function App() {
       <div className={appStyle.app}>
         <CoreStatus ref={coreStatusRef} />
         {previewImage}
-        <button onClick={renderImageNode}>test</button>
-        <button onClick={() => { 
-
-          resizeFileList() 
-
-        }}>test2</button>
         <div className={appStyle.settingPanel}>
           settingPanel
         </div>
