@@ -1,11 +1,21 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
+import IconButton from '@material-ui/core/IconButton'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import ZoomOutIcon from '@material-ui/icons/ZoomOut'
+import TextField from '@material-ui/core/TextField'
+import { blue, cyan } from '@material-ui/core/colors'
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+
 import { sendCmdToCore } from '../common/utils'
 
 import previewImagePanelStyle from "./previewImagePanel.module.scss"
 
 function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config }) {
 
+  const toolBarRef = useRef(null)
   const [imageNode, setImageNode] = useState()
+  const [imageScale, setImageScale] = useState(1.0)
+
   const task_heartbeat = useRef(0)
 
   previewImagePanelRef.current.renderImageNode = (args) => {
@@ -56,7 +66,7 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
             if (resp['ret'] === 0) {
               const base64Img = resp['img']
               //console.log(base64Img)
-              setImageNode(<img src={`data:image/png;base64,${base64Img}`} alt='demo' />)
+              setImageNode(<img src={`data:image/png;base64,${base64Img}`} alt='demo'/>)
               resolve(resp['ret'])
 
             } else if (resp['ret'] === 1) {
@@ -117,9 +127,31 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
 
   return (
     <div className={previewImagePanelStyle.previewImagePanel}>
-      <div className={previewImagePanelStyle.imageNode}>
-        {imageNode}
-      </div>
+      <MuiThemeProvider theme={createMuiTheme({ palette: { primary: cyan, secondary: blue } })}>
+        <div className={previewImagePanelStyle.toolBar} ref={toolBarRef}>
+          <IconButton variant="contained" color="secondary" onClick={useCallback(()=>{
+            let s = imageScale
+            setImageScale(s + 0.1)
+          }, [imageScale])}>
+            <ZoomInIcon fontSize="large"/>
+          </IconButton >
+          <div></div>
+          <IconButton variant="contained" color="secondary" onClick={useCallback(() => {
+            let s = imageScale
+            setImageScale( Math.max(s - 0.1, 0))
+          }, [imageScale])}>
+            <ZoomOutIcon fontSize="large" />
+          </IconButton >
+          <div></div>
+          <span className={previewImagePanelStyle.imageScale}>Scale: {imageScale.toFixed(1)}</span>
+          <div></div>
+        </div>
+        <div className={previewImagePanelStyle.imageNode} style={{ maxWidth: toolBarRef.current === null ? 2000 : toolBarRef.current.clientWidth-2 /* diff error */}}>
+          <div style={{ transform: `scale(${imageScale})`}}>
+            {imageNode}
+          </div>
+        </div>
+      </MuiThemeProvider>
     </div>
   )  
 }
