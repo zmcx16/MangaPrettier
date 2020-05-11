@@ -7,15 +7,13 @@
 }
 
 .settingPanel{
-  border: 1px solid black;
-  height: 200px;
+  margin: 10px;
 }
 
 .imagePanel{
-  border: 1px solid black;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
   justify-content: center;
-  margin: 0 10px;
+  margin: 10px;
 }

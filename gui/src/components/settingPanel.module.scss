@@ -1,0 +1,48 @@
+.settingPanel{
+
+}
+
+.argsPanel{
+  border: 1px solid black;
+}
+
+.argsBoard{
+  border: 1px solid black;
+  height: 160px;
+  overflow: auto;
+  margin: 10px;
+}
+
+.listItemOdd{
+  background-color: #ffffff;
+}
+
+.listItemEven{
+  background-color: aliceblue;
+}
+
+.argsListName{
+  flex: inherit;
+  width: 150px;
+}
+
+.argsButtons{
+  margin: 10px;
+  display: grid;
+  grid-template-columns: auto 30px auto 30px auto 40px 1fr 40px auto 0px;
+  justify-items: center;
+  align-items: center;
+}
+
+.button{
+  min-width: 80px;
+}
+
+.exeButton{
+  min-width: 150px;
+}
+
+.progressBar{
+  width: 100%;
+  height: 28px;
+}

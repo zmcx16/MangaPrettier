@@ -59,7 +59,9 @@ class MangaPrettierCore(object):
 
             self.logger.info('run_task end')
             # print(base64.encodebytes(img_arr).decode('ascii'))
-            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS, CoreTaskKey.IMAGE: base64.encodebytes(img_arr).decode('ascii')}
+            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
+                    CoreTaskKey.IMAGE: base64.encodebytes(img_arr).decode('ascii'),
+                    CoreTaskKey.IMAGE_INFO: {CoreTaskKey.WIDTH: w, CoreTaskKey.HEIGHT: h}}
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)
@@ -71,7 +73,8 @@ class MangaPrettierCore(object):
 
         if resp is not None and resp[CoreTaskKey.RETURN] == 0:
             self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
-                                                            CoreTaskKey.IMAGE: resp[CoreTaskKey.IMAGE]}
+                                                            CoreTaskKey.IMAGE: resp[CoreTaskKey.IMAGE],
+                                                            CoreTaskKey.IMAGE_INFO: resp[CoreTaskKey.IMAGE_INFO]}
         else:
             self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR,
                                                             CoreTaskKey.IMAGE: ''}
@@ -92,7 +95,8 @@ class MangaPrettierCore(object):
 
                 task_id = str(uuid.uuid4())
                 self.task_dict_lock.acquire()
-                self.task_dict[task_id] = {CoreTaskKey.RETURN: CoreReturn.PROCESSING, CoreTaskKey.IMAGE: ''}
+                self.task_dict[task_id] = {CoreTaskKey.RETURN: CoreReturn.PROCESSING, CoreTaskKey.IMAGE: '',
+                                           CoreTaskKey.IMAGE_INFO: {}}
                 self.task_dict_lock.release()
 
                 t_param = {CoreTaskKey.TASK_ID: task_id, CoreTaskKey.PARAMETER: param}
@@ -106,7 +110,8 @@ class MangaPrettierCore(object):
                 self.task_dict_lock.acquire()
                 if task_id in self.task_dict:
                     resp = {CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
-                            CoreTaskKey.IMAGE: self.task_dict[task_id][CoreTaskKey.IMAGE]}
+                            CoreTaskKey.IMAGE: self.task_dict[task_id][CoreTaskKey.IMAGE],
+                            CoreTaskKey.IMAGE_INFO: self.task_dict[task_id][CoreTaskKey.IMAGE_INFO]}
 
                     if self.task_dict[task_id][CoreTaskKey.RETURN] == CoreReturn.SUCCESS:
                         self.task_dict.pop(task_id, None)

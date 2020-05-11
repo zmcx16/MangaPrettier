@@ -1,8 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StylesProvider } from "@material-ui/core/styles"
 
-import CoreStatus from './components/coreStatus'
-import PreviewImage from './components/previewImage'
+import SettingPanel from './components/settingPanel'
 import FilesPanel from './components/filesPanel'
 import PreviewImagePanel from './components/previewImagePanel'
 
@@ -25,16 +24,21 @@ var client = new zerorpc.Client({
 
 function App() {
 
-  const coreStatusRef = useRef(null);
   const [previewImage, setPreviewImage] = useState()
+
+  const [settingPanel, setSettingPanel] = useState()
+  const settingPanellRef = useRef({
+  })
+  const settingPanelAPI = {
+  }
 
   const [filesPanel, setFilesPanel] = useState()
   const filesPanelRef = useRef({
     resizeFileList: null
   })
   const filesPanelAPI = {
-    resizeFileList: () => {
-      filesPanelRef.current.resizeFileList()
+    getSelectedFile: () =>{
+      filesPanelRef.current.getSelectedFile()
     }
   }
 
@@ -54,6 +58,7 @@ function App() {
   // componentDidUpdate is here!
 
     setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} />)
+    setSettingPanel(<SettingPanel settingPanellRef={settingPanellRef} filesPanelAPI={filesPanelAPI} previewImagePanelRef={previewImagePanelRef} />)
 
     // ipc register
     ipc.on('getConfig_callback', (event, config) => {
@@ -64,9 +69,7 @@ function App() {
       // create component and pass config
       //setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
 
-      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} client={client} coreStatusRef={coreStatusRef} config={{ preview_timeout: config['preview_timeout'] }} />)
-
-      filesPanelAPI.resizeFileList()
+      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} client={client} config={{ preview_timeout: config['preview_timeout'] }} />)
     })
 
     ipc.send('getConfig')
@@ -81,10 +84,8 @@ function App() {
   return (
     <StylesProvider injectFirst>
       <div className={appStyle.app}>
-        <CoreStatus ref={coreStatusRef} />
-        {previewImage}
         <div className={appStyle.settingPanel}>
-          settingPanel
+          {settingPanel}
         </div>
         <div className={appStyle.imagePanel}>
           {filesPanel}

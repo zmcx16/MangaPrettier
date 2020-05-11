@@ -10,11 +10,12 @@ import { sendCmdToCore } from '../common/utils'
 
 import previewImagePanelStyle from "./previewImagePanel.module.scss"
 
-function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config }) {
+function PreviewImagePanel({ previewImagePanelRef, client, config }) {
 
   const toolBarRef = useRef(null)
   const [imageNode, setImageNode] = useState()
   const [imageScale, setImageScale] = useState(1.0)
+  const [imageInfo, setImageInfo] = useState({width: 100, height: 100})
 
   const task_heartbeat = useRef(0)
 
@@ -36,8 +37,6 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
           ],
           'show': false
         }
-
-        coreStatusRef.current.setStatus(1)
 
         sendCmdToCore(client, param, (error, resp) => {
           if (error) {
@@ -64,9 +63,9 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
             console.log(resp);
 
             if (resp['ret'] === 0) {
+              setImageInfo({ width: resp['img_info']['width'], height: resp['img_info']['height'] })
               const base64Img = resp['img']
-              //console.log(base64Img)
-              setImageNode(<img src={`data:image/png;base64,${base64Img}`} alt='demo'/>)
+              setImageNode(<img src={`data:image/png;base64,${base64Img}`} alt='demo' style={{width: '100%'}}/>)
               resolve(resp['ret'])
 
             } else if (resp['ret'] === 1) {
@@ -114,12 +113,10 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
     }).then((msg) => {
       // clear heartbeat and set status
       console.log(msg)
-      coreStatusRef.current.setStatus(0)
       clearInterval(task_heartbeat.current)
     }).catch((msg) => {
       // clear heartbeat and set status
       console.error(msg)
-      coreStatusRef.current.setStatus(-1)
       clearInterval(task_heartbeat.current)
     })
     
@@ -130,15 +127,13 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
       <MuiThemeProvider theme={createMuiTheme({ palette: { primary: cyan, secondary: blue } })}>
         <div className={previewImagePanelStyle.toolBar} ref={toolBarRef}>
           <IconButton variant="contained" color="secondary" onClick={useCallback(()=>{
-            let s = imageScale
-            setImageScale(s + 0.1)
+            setImageScale(imageScale + 0.1)
           }, [imageScale])}>
             <ZoomInIcon fontSize="large"/>
           </IconButton >
           <div></div>
           <IconButton variant="contained" color="secondary" onClick={useCallback(() => {
-            let s = imageScale
-            setImageScale( Math.max(s - 0.1, 0))
+            setImageScale(Math.max(imageScale - 0.1, 0))
           }, [imageScale])}>
             <ZoomOutIcon fontSize="large" />
           </IconButton >
@@ -147,7 +142,7 @@ function PreviewImagePanel({ previewImagePanelRef, client, coreStatusRef, config
           <div></div>
         </div>
         <div className={previewImagePanelStyle.imageNode} style={{ maxWidth: toolBarRef.current === null ? 2000 : toolBarRef.current.clientWidth-2 /* diff error */}}>
-          <div style={{ transform: `scale(${imageScale})`}}>
+          <div style={{ width: `${imageScale * imageInfo.width}px`  }}>
             {imageNode}
           </div>
         </div>

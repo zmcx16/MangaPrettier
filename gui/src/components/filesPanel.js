@@ -3,7 +3,7 @@ import Button from '@material-ui/core/Button'
 import ImageIcon from '@material-ui/icons/Image'
 import FolderIcon from '@material-ui/icons/Folder'
 import DeleteIcon from '@material-ui/icons/Delete'
-import { blue, cyan } from '@material-ui/core/colors'
+import { cyan } from '@material-ui/core/colors'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -19,20 +19,19 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
 
   const fileList = useRef([])
   const fileListRef = useRef(null)
-  const panelHeight = useRef(200)
+  const selectedFile = useRef({})
 
-  const renderFileList = useCallback(()=>{
-    return <FixedSizeList height={panelHeight.current} width={'auto'} itemSize={46} itemCount={fileList.current.length}>
+  const renderFileList = ()=>{
+    return <FixedSizeList height={400} width={'auto'} itemSize={46} itemCount={fileList.current.length}>
       {renderRow}
     </FixedSizeList>
-  }, [panelHeight])
+  }
 
   const renderRow = ({ index, style }) => (
     <ListItem button style={style} key={index} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} >
       <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images'].length + ')'} onClick={() => {
-        console.log(fileList.current[index])
-        console.log(previewImagePanelAPI)
-        previewImagePanelAPI.renderImageNode(fileList.current[index])
+        selectedFile.current = fileList.current[index]
+        previewImagePanelAPI.renderImageNode(selectedFile.current)
       }}/>
       <ListItemIcon className={filesPanelStyle.listDeleteIcon} onClick={() => {
         fileList.current.splice(index, 1)
@@ -43,20 +42,19 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
     </ListItem>
   )
 
-  filesPanelRef.current.resizeFileList = () => {
-    panelHeight.current = fileListRef.current.clientHeight
-    setFileListNodes(renderFileList())
+  filesPanelRef.current.getSelectedFile = () => {
+    return selectedFile.current
   }
 
   const [fileListNodes, setFileListNodes] = useState(renderFileList())
 
   return (
     <div className={filesPanelStyle.filesPanel}>
-      <MuiThemeProvider theme={createMuiTheme({ palette: { primary: cyan, secondary: blue } })}>
+      <MuiThemeProvider theme={createMuiTheme({ palette: { primary: { main: '#5381ff'}, secondary: cyan } })}>
         <div className={filesPanelStyle.toolBar}>
           <Button
             variant="contained"
-            color="secondary"
+            color="primary"
             startIcon={<FolderIcon />}
             onClick={useCallback(()=>{
               var material_info = ipc.sendSync('getImagesInfo', true);
@@ -71,7 +69,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
           <div></div>
           <Button
             variant="contained"
-            color="secondary"
+            color="primary"
             startIcon={<ImageIcon />}
             onClick={useCallback(() => {
               var material_info = ipc.sendSync('getImagesInfo', false);
