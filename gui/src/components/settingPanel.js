@@ -12,6 +12,7 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 
 import settingPanelStyle from "./settingPanel.module.scss"
 
+const shortid = window.require('shortid')
 
 function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
@@ -27,7 +28,7 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
   const renderArgsList = ()=>{
     return argsList.current.map((value, index) => {
       return (
-        <ListItem key={index} className={index % 2 ? settingPanelStyle.listItemOdd : settingPanelStyle.listItemEven}>
+        <ListItem key={shortid.generate()} className={index % 2 ? settingPanelStyle.listItemOdd : settingPanelStyle.listItemEven}>
           <ListItemText primary={value.name} primaryTypographyProps={{ style: ({ fontWeight: 'bold' }) }} className={settingPanelStyle.argsListName} />
           <ListItemText primary={value.text} />
           <ListItemSecondaryAction>

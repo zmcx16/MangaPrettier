@@ -28,6 +28,7 @@
     "react-resize-detector": "^4.2.3",
     "react-window": "^1.8.5",
     "sass": "^1.26.3",
+    "shortid": "^2.2.15",
     "typescript": "^3.8.3",
     "zerorpc": "^0.9.8"
   },
