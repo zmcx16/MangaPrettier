@@ -34,6 +34,27 @@
   align-items: center;
 }
 
+.addWindow{
+  min-width: 300px;
+  margin: 20px;
+}
+
+.addWindowEffectSelect{
+  min-width: 120px;
+}
+
+.addWindowEffectArgs{
+  border: 1px solid black;
+  margin: 20px auto;
+}
+
+.addWindowButtons{
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-items: normal;
+  align-items: center;
+}
+
 .button{
   min-width: 80px;
 }
