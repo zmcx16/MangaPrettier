@@ -14,6 +14,8 @@ import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 
+import EffectArgs from './effectArgs'
+
 import settingPanelStyle from "./settingPanel.module.scss"
 
 const shortid = window.require('shortid')
@@ -78,6 +80,7 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
   const openAddWindow = Boolean(addWindow)
   const id_addWindow = openAddWindow ? 'addWindow' : undefined
+  const argsRef = useRef({}) 
 
   return (
     <div className={settingPanelStyle.settingPanel}>
@@ -134,10 +137,10 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
               </Select>
             </FormControl>
             <div className={settingPanelStyle.addWindowEffectArgs}>
-              args
+              <EffectArgs argsRef={argsRef} />
             </div>
             <div className={settingPanelStyle.addWindowButtons}>
-              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { }}>Ok</Button>
+              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { console.log(argsRef.current) }}>Ok</Button>
               <div></div>
               <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { }}>Cancel</Button>
             </div>
