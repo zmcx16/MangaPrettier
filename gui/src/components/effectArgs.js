@@ -1,11 +1,17 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useCallback } from 'react'
 
-import Multiply from './effects/multiply'
+import Blend from './effects/blend'
 
-function EffectArgs({ effectType, argsRef }) {
+function EffectArgs({ renderEffectArgsFunc, effectType, settingPanelRef, filesPanelAPI, previewImagePanelAPI }) {
+/*
+  const [effectNode, setEffectNode] = useState(<Blend effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />)
 
+  renderEffectArgsFunc.current = (type)=>{
+    setEffectNode(<Blend effectType={type} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />)
+  }
+*/
   return (
-    <Multiply argsRef={argsRef}/>
+    <Blend effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />
   )
 }
 

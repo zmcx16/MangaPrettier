@@ -47,9 +47,8 @@ class MangaPrettierCore(object):
             # self.logger.debug(image)
             # self.logger.debug(image.shape)
 
-            mode = MangaPrettierCore.ModeDict[param[CoreTaskKey.TYPE]]
-
             for config in param[CoreTaskKey.EFFECTS]:
+                mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
                 image = mode.run(image, config, param[CoreTaskKey.SHOW])
 
             image = Image.fromarray(image)

@@ -22,20 +22,18 @@ function PreviewImagePanel({ previewImagePanelRef, client, config }) {
   previewImagePanelRef.current.renderImageNode = (args) => {
 
     //console.log(args)
-    var image_path = args['images'][Math.floor(Math.random() * args['images'].length)]
+    var image_path = args['image']
+    var effect_args = args['effects']
 
     // sendTaskCmd  
     var sendTaskCmd = () => {
       return new Promise((resolve, reject) => {
 
         var param = {
-          'cmd': 'run_task_async',
-          'type': 'bw',
-          'src': image_path,
-          'effects': [
-            { 'mode': 'multiply', 'opacity': .8 }
-          ],
-          'show': false
+          cmd: 'run_task_async',
+          src: image_path,
+          effects: effect_args,
+          show: false
         }
 
         sendCmdToCore(client, param, (error, resp) => {
@@ -145,6 +143,8 @@ function PreviewImagePanel({ previewImagePanelRef, client, config }) {
           <div style={{ width: `${imageScale * imageInfo.width}px`  }}>
             {imageNode}
           </div>
+        </div>
+        <div className={previewImagePanelStyle.imageLoading}>
         </div>
       </MuiThemeProvider>
     </div>

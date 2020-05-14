@@ -24,21 +24,25 @@ var client = new zerorpc.Client({
 
 function App() {
 
-  const [previewImage, setPreviewImage] = useState()
-
   const [settingPanel, setSettingPanel] = useState()
-  const settingPanellRef = useRef({
+  const settingPanelRef = useRef({
+    getEffectsParam: null,
+    setArgsRef: null,
+    getArgsRef: null
   })
   const settingPanelAPI = {
+    getEffectsParam: () =>{
+      return settingPanelRef.current.getEffectsParam()
+    }
   }
 
   const [filesPanel, setFilesPanel] = useState()
   const filesPanelRef = useRef({
-    resizeFileList: null
+    getSelectedFile: null
   })
   const filesPanelAPI = {
     getSelectedFile: () =>{
-      filesPanelRef.current.getSelectedFile()
+      return filesPanelRef.current.getSelectedFile()
     }
   }
 
@@ -57,8 +61,8 @@ function App() {
   // componentDidMount is here!
   // componentDidUpdate is here!
 
-    setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} />)
-    setSettingPanel(<SettingPanel settingPanellRef={settingPanellRef} filesPanelAPI={filesPanelAPI} previewImagePanelRef={previewImagePanelRef} />)
+    setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} settingPanelAPI={settingPanelAPI}/>)
+    setSettingPanel(<SettingPanel settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />)
 
     // ipc register
     ipc.on('getConfig_callback', (event, config) => {

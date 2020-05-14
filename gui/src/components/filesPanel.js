@@ -16,7 +16,7 @@ const electron = window.require('electron')
 const ipc = electron.ipcRenderer
 const shortid = window.require('shortid')
 
-function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
+function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
 
   const fileList = useRef([])
   const fileListRef = useRef(null)
@@ -31,8 +31,12 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
   const renderRow = ({ index, style }) => (
     <ListItem button style={style} key={shortid.generate()} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} >
       <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images'].length + ')'} onClick={() => {
-        selectedFile.current = fileList.current[index]
-        previewImagePanelAPI.renderImageNode(selectedFile.current)
+        let selectedTarget = fileList.current[index]
+        selectedFile.current = selectedTarget['images'][Math.floor(Math.random() * selectedTarget['images'].length)]
+        let imageWithEffect = {}
+        imageWithEffect['image'] = selectedFile.current
+        imageWithEffect['effects'] = settingPanelAPI.getEffectsParam()
+        previewImagePanelAPI.renderImageNode(imageWithEffect)
       }}/>
       <ListItemIcon className={filesPanelStyle.listDeleteIcon} onClick={() => {
         fileList.current.splice(index, 1)
@@ -43,6 +47,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI}) {
     </ListItem>
   )
 
+  // filesPanel API
   filesPanelRef.current.getSelectedFile = () => {
     return selectedFile.current
   }

@@ -24,10 +24,7 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
   // effects list
   const argsList = useRef([
-    { name: 'oox1', text: 'aabbbcc', value: {} },
-    { name: 'oox', text: 'aabbbcc', value: {} },
-    { name: 'oox', text: 'aabbbcc', value: {} },
-    { name: 'oox', text: 'aabbbcc', value: {} },
+    { name: 'oox1', text: 'aabbbcc', value: { 'type': 'bw', 'mode': 'multiply', 'opacity': .8 } }
   ])
 
   const renderArgsList = ()=>{
@@ -65,10 +62,18 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
   }
 
   // effects select
+  const effectTypes = useRef([
+    { name: 'multiply', value: 'multiply' },
+    { name: 'soft light', value: 'soft_light' }
+  ])
+
   const [effectSelect, setEffectSelect] = useState({
     name: 'effect',
-    effectType: ''
+    effectType: effectTypes.current[0].value
   });
+
+  const renderEffectArgsNode = (effectType) => { return <EffectArgs effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />}
+  const [effectArgsNode, setEffectArgsNode] = useState(renderEffectArgsNode(effectTypes.current[0].value))
 
   const effectSelectChange = (event) => {
     const name = event.target.name;
@@ -76,11 +81,27 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
       ...effectSelect,
       [name]: event.target.value,
     });
+
+    setEffectArgsNode(renderEffectArgsNode(event.target.value))
   };
+
+  const argsRef = useRef({}) 
+
+  // get effects param API
+  settingPanelRef.current.getEffectsParam = () => {
+    return argsList.current.map((value, index) => { return value.value })
+  }
+
+  settingPanelRef.current.setArgsRef = (value) => {
+    argsRef.current = value
+  }
+
+  settingPanelRef.current.getArgsRef = () => {
+    return argsRef.current
+  }
 
   const openAddWindow = Boolean(addWindow)
   const id_addWindow = openAddWindow ? 'addWindow' : undefined
-  const argsRef = useRef({}) 
 
   return (
     <div className={settingPanelStyle.settingPanel}>
@@ -131,13 +152,15 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
                   id: 'effect-select',
                 }}
               >
-                <option value={'effect1'}>effect1</option>
-                <option value={'effect2'}>effect2</option>
-                <option value={'effect3'}>effect3</option>
+                {
+                  effectTypes.current.map((value, index) => {
+                    return <option key={shortid.generate()} value={value.value}>{value.name}</option>
+                  })
+                }
               </Select>
             </FormControl>
             <div className={settingPanelStyle.addWindowEffectArgs}>
-              <EffectArgs argsRef={argsRef} />
+              {effectArgsNode}
             </div>
             <div className={settingPanelStyle.addWindowButtons}>
               <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { console.log(argsRef.current) }}>Ok</Button>
