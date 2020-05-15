@@ -6,10 +6,9 @@ import blendStyle from "./blend.module.scss"
 
 function Blend({ effectType, settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
-  const argsRef = useRef({ type: 'bw', mode: effectType, opacity: .8 })
+  const argsRef = useRef()
+  argsRef.current = { type: 'bw', mode: effectType, opacity: .8 }
   settingPanelRef.current.setArgsRef(argsRef.current)
-  console.log(effectType)
-  console.log(settingPanelRef.current.getArgsRef())
 
   return (
     <div className={blendStyle.root}>

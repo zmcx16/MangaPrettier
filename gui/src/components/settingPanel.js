@@ -23,9 +23,7 @@ const shortid = window.require('shortid')
 function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
   // effects list
-  const argsList = useRef([
-    { name: 'oox1', text: 'aabbbcc', value: { 'type': 'bw', 'mode': 'multiply', 'opacity': .8 } }
-  ])
+  const argsList = useRef([])
 
   const renderArgsList = ()=>{
     return argsList.current.map((value, index) => {
@@ -163,9 +161,22 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
               {effectArgsNode}
             </div>
             <div className={settingPanelStyle.addWindowButtons}>
-              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { console.log(argsRef.current) }}>Ok</Button>
+              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { 
+                
+                console.log(argsRef.current)
+                let displayName = argsRef.current.mode
+                let displayText = ''
+                for (const [key, value] of Object.entries(argsRef.current)) {
+                  if (key !== 'mode' && key !== 'type'){
+                    displayText += key + ': ' + value + '; '
+                  }
+                }
+                argsList.current.push({ name: displayName, text: displayText, value: argsRef.current })
+                setArgsListNodes(renderArgsList())
+                addWindowClose()
+              }}>Ok</Button>
               <div></div>
-              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { }}>Cancel</Button>
+              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={addWindowClose}>Cancel</Button>
             </div>
           </div>
         </Popover>

@@ -53,7 +53,7 @@ function createWindow() {
     render_config = loadDataSync(CONFIG_FILE_NAME);
     if (Object.keys(render_config).length === 0) {
         render_config = {
-            heartbeat: 300,
+            heartbeat: 500,
             preview_timeout: 30000
         }
         //saveDataSync(CONFIG_FILE_NAME, render_config)

@@ -46,6 +46,11 @@ class MangaPrettierCore(object):
 
             # self.logger.debug(image)
             # self.logger.debug(image.shape)
+            image_org = Image.fromarray(image)
+            with io.BytesIO() as output:
+                image_org.save(output, format='png')
+                img_org_arr = output.getvalue()
+
 
             for config in param[CoreTaskKey.EFFECTS]:
                 mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
@@ -60,6 +65,7 @@ class MangaPrettierCore(object):
             # print(base64.encodebytes(img_arr).decode('ascii'))
             return {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
                     CoreTaskKey.IMAGE: base64.encodebytes(img_arr).decode('ascii'),
+                    CoreTaskKey.IMAGE_ORG: base64.encodebytes(img_org_arr).decode('ascii'),
                     CoreTaskKey.IMAGE_INFO: {CoreTaskKey.WIDTH: w, CoreTaskKey.HEIGHT: h}}
 
         except Exception as e:
@@ -73,6 +79,7 @@ class MangaPrettierCore(object):
         if resp is not None and resp[CoreTaskKey.RETURN] == 0:
             self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
                                                             CoreTaskKey.IMAGE: resp[CoreTaskKey.IMAGE],
+                                                            CoreTaskKey.IMAGE_ORG: resp[CoreTaskKey.IMAGE_ORG],
                                                             CoreTaskKey.IMAGE_INFO: resp[CoreTaskKey.IMAGE_INFO]}
         else:
             self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR,
@@ -95,7 +102,7 @@ class MangaPrettierCore(object):
                 task_id = str(uuid.uuid4())
                 self.task_dict_lock.acquire()
                 self.task_dict[task_id] = {CoreTaskKey.RETURN: CoreReturn.PROCESSING, CoreTaskKey.IMAGE: '',
-                                           CoreTaskKey.IMAGE_INFO: {}}
+                                           CoreTaskKey.IMAGE_ORG: '', CoreTaskKey.IMAGE_INFO: {}}
                 self.task_dict_lock.release()
 
                 t_param = {CoreTaskKey.TASK_ID: task_id, CoreTaskKey.PARAMETER: param}
@@ -110,6 +117,7 @@ class MangaPrettierCore(object):
                 if task_id in self.task_dict:
                     resp = {CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
                             CoreTaskKey.IMAGE: self.task_dict[task_id][CoreTaskKey.IMAGE],
+                            CoreTaskKey.IMAGE_ORG: self.task_dict[task_id][CoreTaskKey.IMAGE_ORG],
                             CoreTaskKey.IMAGE_INFO: self.task_dict[task_id][CoreTaskKey.IMAGE_INFO]}
 
                     if self.task_dict[task_id][CoreTaskKey.RETURN] == CoreReturn.SUCCESS:
@@ -134,7 +142,7 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("MangaPrettierCore")
     formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
-    file_handler = logging.FileHandler("I:\\work\\WORK\\MangaPrettier\\gui\\core.log")
+    file_handler = logging.FileHandler("C:\\zmcx16\\MangaPrettier\\gui\\core.log")
     file_handler.setFormatter(formatter)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.formatter = formatter

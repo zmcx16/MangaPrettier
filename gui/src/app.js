@@ -24,6 +24,11 @@ var client = new zerorpc.Client({
 
 function App() {
 
+  const [loadingState, setLoadingState] = useState(false)
+  const appAPI = {
+    setLoadingState: setLoadingState
+  }
+
   const [settingPanel, setSettingPanel] = useState()
   const settingPanelRef = useRef({
     getEffectsParam: null,
@@ -57,6 +62,7 @@ function App() {
     }
   }
 
+
   useEffect(() => {
   // componentDidMount is here!
   // componentDidUpdate is here!
@@ -73,7 +79,7 @@ function App() {
       // create component and pass config
       //setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
 
-      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} client={client} config={{ preview_timeout: config['preview_timeout'] }} />)
+      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} appAPI={appAPI} client={client} config={{ preview_timeout: config['preview_timeout'] }}/>)
     })
 
     ipc.send('getConfig')
@@ -94,6 +100,12 @@ function App() {
         <div className={appStyle.imagePanel}>
           {filesPanel}
           {previewImagePanel}
+        </div>
+      </div>
+      <div className={appStyle.loadingBlock} style={{ display: loadingState ? 'block' : 'none'}}>
+        <div className={appStyle.loadingAnimation}>
+        </div>
+        <div className={appStyle.loadingBackground}>
         </div>
       </div>
     </StylesProvider>

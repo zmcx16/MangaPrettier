@@ -24,6 +24,7 @@
     "node-sass": "^4.14.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-indiana-drag-scroll": "^1.6.1",
     "react-intl": "^3.12.0",
     "react-resize-detector": "^4.2.3",
     "react-window": "^1.8.5",

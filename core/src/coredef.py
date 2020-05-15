@@ -14,6 +14,7 @@ class CoreTaskKey:
     RETURN = 'ret'
     EXCEPTION = 'ex'
     IMAGE = 'img'
+    IMAGE_ORG = 'img_org'
     IMAGE_INFO = 'img_info'
     WIDTH = 'width'
     HEIGHT = 'height'
