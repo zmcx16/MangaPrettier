@@ -179,6 +179,12 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
       // clear heartbeat and set status
       appAPI.setLoadingState(false)
       console.error(msg)
+      appAPI.popModalWindow(
+        <>
+          <h2>Send command to core process failed.</h2>
+          <p>Please restart MangaPrettier and try again.</p>
+        </>
+      )
       clearInterval(task_heartbeat.current)
     })
     

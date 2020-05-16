@@ -1,5 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StylesProvider } from "@material-ui/core/styles"
+import Modal from '@material-ui/core/Modal'
+import Backdrop from '@material-ui/core/Backdrop'
+import Fade from '@material-ui/core/Fade'
 
 import SettingPanel from './components/settingPanel'
 import FilesPanel from './components/filesPanel'
@@ -24,9 +27,22 @@ var client = new zerorpc.Client({
 
 function App() {
 
+  const [openModal, setOpenModal] = useState(false)
+  const [modalNode, setModalNode] = useState(<div></div>)
+
+  const popModalWindow = (content) => {
+    setModalNode(
+      <div className={appStyle.modalWindow}>
+        {content}
+      </div>
+    )
+    setOpenModal(true)
+  }
+
   const [loadingState, setLoadingState] = useState(false)
   const appAPI = {
-    setLoadingState: setLoadingState
+    setLoadingState: setLoadingState,
+    popModalWindow: popModalWindow
   }
 
   const [settingPanel, setSettingPanel] = useState()
@@ -108,6 +124,22 @@ function App() {
         <div className={appStyle.loadingBackground}>
         </div>
       </div>
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        className={appStyle.modal}
+        open={openModal}
+        onClose={() => {setOpenModal(false)}}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={openModal}>
+          {modalNode}
+        </Fade>
+      </Modal>
     </StylesProvider>
   )
 }

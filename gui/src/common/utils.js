@@ -1,3 +1,4 @@
+import React from 'react'
 
 // zerorpc function
 export function sendCmdToCore(client, msg, callback) {
