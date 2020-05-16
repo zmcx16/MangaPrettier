@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { blue, cyan } from '@material-ui/core/colors'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Switch from '@material-ui/core/Switch'
+import ScrollContainer from 'react-indiana-drag-scroll'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 
 import { sendCmdToCore } from '../common/utils'
@@ -219,10 +220,12 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
           <div></div>
         </div>
         <div className={previewImagePanelStyle.imageNode} style={{ maxWidth: toolBarRef.current === null ? 2000 : toolBarRef.current.clientWidth-2 /* diff error */}}>
-          <div style={{ width: `${imageScale * imageInfo.width}px`  }}>
-            <div style={{ display: enableEffect ? 'block' : 'none' }}>{ imageNode }</div>
-            <div style={{ display: enableEffect ? 'none' : 'block' }}>{ imageOrgNode }</div>
-          </div>
+          <ScrollContainer className="scroll-container" hideScrollbars={false} style={{height: '100%'}}>
+            <div style={{ width: `${imageScale * imageInfo.width}px`, height: `${imageScale * imageInfo.height}px`   }}>
+              <div style={{ display: enableEffect ? 'block' : 'none' }}>{ imageNode }</div>
+              <div style={{ display: enableEffect ? 'none' : 'block' }}>{ imageOrgNode }</div>
+            </div>
+          </ScrollContainer>
         </div>
       </MuiThemeProvider>
     </div>

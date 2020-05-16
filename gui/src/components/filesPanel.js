@@ -29,15 +29,15 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
   }
 
   const renderRow = ({ index, style }) => (
-    <ListItem button style={style} key={shortid.generate()} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} >
-      <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images'].length + ')'} onClick={() => {
-        let selectedTarget = fileList.current[index]
-        selectedFile.current = selectedTarget['images'][Math.floor(Math.random() * selectedTarget['images'].length)]
-        let imageWithEffect = {}
-        imageWithEffect['image'] = selectedFile.current
-        imageWithEffect['effects'] = settingPanelAPI.getEffectsParam()
-        previewImagePanelAPI.renderImageNode(imageWithEffect)
-      }}/>
+    <ListItem button style={style} key={shortid.generate()} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} onClick={() => {
+      let selectedTarget = fileList.current[index]
+      selectedFile.current = selectedTarget['images'][Math.floor(Math.random() * selectedTarget['images'].length)]
+      let imageWithEffect = {}
+      imageWithEffect['image'] = selectedFile.current
+      imageWithEffect['effects'] = settingPanelAPI.getEffectsParam()
+      previewImagePanelAPI.renderImageNode(imageWithEffect)
+    }}>
+      <ListItemText className={filesPanelStyle.listItemText} primary={fileList.current[index]['path'] + ' (' + fileList.current[index]['images'].length + ')'}/>
       <ListItemIcon className={filesPanelStyle.listDeleteIcon} onClick={() => {
         fileList.current.splice(index, 1)
         setFileListNodes(renderFileList())
