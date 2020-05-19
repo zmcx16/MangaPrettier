@@ -93,6 +93,7 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
 
         var param = {
           cmd: 'run_task_async',
+          task: 'preview',
           src: image_path,
           effects: effect_args,
           show: false
@@ -123,9 +124,9 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
             console.log(resp);
 
             if (resp['ret'] === 0) {
-              setImageInfo({ width: resp['img_info']['width'], height: resp['img_info']['height'] })
-              setImageNode(<img src={`data:image/png;base64,${resp['img']}`} alt='demo' style={{ width: '100%'}}/>)
-              setImageOrgNode(<img src={`data:image/png;base64,${resp['img_org']}`} alt='demo' style={{ width: '100%'}} />)
+              setImageInfo({ width: resp['data']['img_info']['width'], height: resp['data']['img_info']['height'] })
+              setImageNode(<img src={`data:image/png;base64,${resp['data']['img']}`} alt='demo' style={{ width: '100%'}}/>)
+              setImageOrgNode(<img src={`data:image/png;base64,${resp['data']['img_org']}`} alt='demo' style={{ width: '100%'}} />)
               resolve(resp['ret'])
 
             } else if (resp['ret'] === 1) {

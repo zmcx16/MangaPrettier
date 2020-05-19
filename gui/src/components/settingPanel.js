@@ -15,12 +15,13 @@ import Select from '@material-ui/core/Select'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 
 import EffectArgs from './effectArgs'
+import { sendCmdToCore } from '../common/utils'
 
 import settingPanelStyle from "./settingPanel.module.scss"
 
 const shortid = window.require('shortid')
 
-function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
+function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePanelAPI, client}) {
 
   // panel prop
   const [taskRunning, setTaskRunning] = useState(false)
@@ -104,6 +105,101 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
   const openAddWindow = Boolean(addWindow)
   const id_addWindow = openAddWindow ? 'addWindow' : undefined
 
+
+  // run task
+  const task_heartbeat = useRef(0)
+  
+  const runTask = () => {
+
+    var sendTaskCmd = () => {
+      return new Promise((resolve, reject) => {
+
+        var param = {
+          cmd: 'run_task_async',
+          task: 'batch'
+        }
+
+        sendCmdToCore(client, param, (error, resp) => {
+          if (error) {
+            reject('sendTaskCmd failed')
+          } else {
+            resolve(resp)
+          }
+        })
+      })
+    }
+
+    var getTaskResult = (param_t) => {
+      return new Promise((resolve, reject) => {
+
+        let task_id = param_t['task_id']
+
+        sendCmdToCore(client, { 'cmd': 'get_task_result', 'task_id': task_id }, (error, resp) => {
+          if (error) {
+            console.error(error)
+            reject('sendCmdToCore failed')
+          } else {
+            console.log(resp);
+
+            if (resp['ret'] === 0) {
+              resolve(resp['ret'])
+
+            } else if (resp['ret'] === 1) {
+              resolve(resp['ret'])
+
+            }
+            else {
+              reject('getTaskResult failed')
+            }
+          }
+        })
+      }).then((status) => {
+        if (status === 0) {
+          return new Promise((resolve, reject) => { resolve('task success') })
+        }
+        else {
+          return getTaskResult(param_t)
+        }
+      }).catch((msg) => {
+        console.error(msg)
+        return new Promise((resolve, reject) => { reject('getTaskResult failed') })
+      })
+    }
+
+    // set heartbeat
+    task_heartbeat.current = setInterval(() => {
+      sendCmdToCore(client, { cmd: 'test_connect' }, (error, resp) => {
+        if (error) {
+          console.error(error)
+          clearInterval(task_heartbeat.current)
+        } else {
+          console.log(resp);
+        }
+      })
+    }, 300)
+
+    // send task command
+    sendTaskCmd().then((resp) => {
+      // get task result
+      return getTaskResult({ task_id: resp['task_id'] })
+    }).then((msg) => {
+      // clear heartbeat and set status
+      console.log(msg)
+      clearInterval(task_heartbeat.current)
+    }).catch((msg) => {
+      // clear heartbeat and set status
+      console.error(msg)
+      appAPI.popModalWindow(
+        <>
+          <h2>Send command to core process failed.</h2>
+          <p>Please restart MangaPrettier and try again.</p>
+        </>
+      )
+      clearInterval(task_heartbeat.current)
+    })
+  }
+  
+
   return (
     <div className={settingPanelStyle.settingPanel}>
       <MuiThemeProvider theme={createMuiTheme({ palette: { primary: blue, secondary: lightBlue } })}>
@@ -126,6 +222,7 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
               filesPanelAPI.setPanelStatus(taskRunning)
               setArgsListNodes(renderArgsList(!taskRunning))
               setTaskRunning(!taskRunning)
+              runTask()
             }}>Start</Button>
             <div></div>
           </div>

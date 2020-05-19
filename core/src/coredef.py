@@ -20,11 +20,19 @@ class CoreTaskKey:
     HEIGHT = 'height'
     COMMAND = 'cmd'
     PARAMETER = 'param'
+    DATA = 'data'
     SOURCE = 'src'
     TYPE = 'type'
     EFFECTS = 'effects'
     TASK_ID = 'task_id'
     SHOW = 'show'
+    TASK = 'task'
+    CURRENT = 'current'
+    TOTAL = 'total'
+
+    # task type
+    PREVIEW = 'preview'
+    BATCH = 'batch'
 
 
 class CoreTaskCmdKey:

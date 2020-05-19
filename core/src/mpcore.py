@@ -1,4 +1,5 @@
 import sys
+from time import sleep
 import argparse
 import logging
 from PIL import Image
@@ -32,41 +33,73 @@ class MangaPrettierCore(object):
             self.logger.error('exception = %s', e, exc_info=True)
             return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
 
-    def __run_task(self, param):
+    def __run_task(self, param, task_id):
 
         try:
             self.logger.info('run_task start, param: ' + str(param))
+            resp = {}
 
-            image_src = param[CoreTaskKey.SOURCE]
-            image = np.array(Image.open(image_src))
+            if param[CoreTaskKey.TASK] == CoreTaskKey.PREVIEW:
+                image_src = param[CoreTaskKey.SOURCE]
+                image = np.array(Image.open(image_src))
 
-            h, w, layers = image.shape
-            if layers == 3:
-                image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
+                h, w, layers = image.shape
+                if layers == 3:
+                    image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
 
-            # self.logger.debug(image)
-            # self.logger.debug(image.shape)
-            image_org = Image.fromarray(image)
-            with io.BytesIO() as output:
-                image_org.save(output, format='png')
-                img_org_arr = output.getvalue()
+                # self.logger.debug(image)
+                # self.logger.debug(image.shape)
+                image_org = Image.fromarray(image)
+                with io.BytesIO() as output:
+                    image_org.save(output, format='png')
+                    img_org_arr = output.getvalue()
 
+                for config in param[CoreTaskKey.EFFECTS]:
+                    mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
+                    image = mode.run(image, config, param[CoreTaskKey.SHOW])
 
-            for config in param[CoreTaskKey.EFFECTS]:
-                mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
-                image = mode.run(image, config, param[CoreTaskKey.SHOW])
+                image = Image.fromarray(image)
+                with io.BytesIO() as output:
+                    image.save(output, format='png')
+                    img_arr = output.getvalue()
 
-            image = Image.fromarray(image)
-            with io.BytesIO() as output:
-                image.save(output, format='png')
-                img_arr = output.getvalue()
+                self.logger.info('run_task end')
+                # print(base64.encodebytes(img_arr).decode('ascii'))
+                resp = {
+                    CoreTaskKey.RETURN: CoreReturn.SUCCESS,
+                    CoreTaskKey.DATA: {
+                        CoreTaskKey.IMAGE: base64.encodebytes(img_arr).decode('ascii'),
+                        CoreTaskKey.IMAGE_ORG: base64.encodebytes(img_org_arr).decode('ascii'),
+                        CoreTaskKey.IMAGE_INFO: {CoreTaskKey.WIDTH: w, CoreTaskKey.HEIGHT: h}
+                    }
+                }
 
-            self.logger.info('run_task end')
-            # print(base64.encodebytes(img_arr).decode('ascii'))
-            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
-                    CoreTaskKey.IMAGE: base64.encodebytes(img_arr).decode('ascii'),
-                    CoreTaskKey.IMAGE_ORG: base64.encodebytes(img_org_arr).decode('ascii'),
-                    CoreTaskKey.IMAGE_INFO: {CoreTaskKey.WIDTH: w, CoreTaskKey.HEIGHT: h}}
+            elif param[CoreTaskKey.TASK] == CoreTaskKey.BATCH:
+
+                current = 0
+                total = 100
+
+                for i in range(100):
+                    self.task_dict_lock.acquire()
+                    self.task_dict[task_id] = {
+                        CoreTaskKey.RETURN: CoreReturn.PROCESSING,
+                        CoreTaskKey.DATA: {
+                            CoreTaskKey.CURRENT: i,
+                            CoreTaskKey.TOTAL: total
+                        }
+                    }
+                    self.task_dict_lock.release()
+                    sleep(0.1)
+
+                resp = {
+                    CoreTaskKey.RETURN: CoreReturn.SUCCESS,
+                    CoreTaskKey.DATA: {
+                        CoreTaskKey.CURRENT: 100,
+                        CoreTaskKey.TOTAL: 100
+                    }
+                }
+
+            return resp
 
         except Exception as e:
             self.logger.error('exception = %s', e, exc_info=True)
@@ -74,16 +107,17 @@ class MangaPrettierCore(object):
 
     def __run_task_thread(self, t_param):
 
-        resp = self.__run_task(t_param[CoreTaskKey.PARAMETER])
+        resp = self.__run_task(t_param[CoreTaskKey.PARAMETER], t_param[CoreTaskKey.TASK_ID])
 
-        if resp is not None and resp[CoreTaskKey.RETURN] == 0:
-            self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.SUCCESS,
-                                                            CoreTaskKey.IMAGE: resp[CoreTaskKey.IMAGE],
-                                                            CoreTaskKey.IMAGE_ORG: resp[CoreTaskKey.IMAGE_ORG],
-                                                            CoreTaskKey.IMAGE_INFO: resp[CoreTaskKey.IMAGE_INFO]}
-        else:
-            self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR,
-                                                            CoreTaskKey.IMAGE: ''}
+        self.task_dict_lock.acquire()
+        self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {
+            CoreTaskKey.RETURN:
+                CoreReturn.SUCCESS if (resp is not None and resp[CoreTaskKey.RETURN] == 0) else
+                CoreReturn.EXCEPTION_ERROR,
+            CoreTaskKey.DATA: resp[CoreTaskKey.DATA]
+        }
+
+        self.task_dict_lock.release()
 
     def run_task(self, param):
 
@@ -101,8 +135,10 @@ class MangaPrettierCore(object):
 
                 task_id = str(uuid.uuid4())
                 self.task_dict_lock.acquire()
-                self.task_dict[task_id] = {CoreTaskKey.RETURN: CoreReturn.PROCESSING, CoreTaskKey.IMAGE: '',
-                                           CoreTaskKey.IMAGE_ORG: '', CoreTaskKey.IMAGE_INFO: {}}
+                self.task_dict[task_id] = {
+                    CoreTaskKey.RETURN: CoreReturn.PROCESSING,
+                    CoreTaskKey.DATA: {}
+                }
                 self.task_dict_lock.release()
 
                 t_param = {CoreTaskKey.TASK_ID: task_id, CoreTaskKey.PARAMETER: param}
@@ -115,15 +151,20 @@ class MangaPrettierCore(object):
 
                 self.task_dict_lock.acquire()
                 if task_id in self.task_dict:
-                    resp = {CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
-                            CoreTaskKey.IMAGE: self.task_dict[task_id][CoreTaskKey.IMAGE],
-                            CoreTaskKey.IMAGE_ORG: self.task_dict[task_id][CoreTaskKey.IMAGE_ORG],
-                            CoreTaskKey.IMAGE_INFO: self.task_dict[task_id][CoreTaskKey.IMAGE_INFO]}
+                    resp = {
+                        CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
+                        CoreTaskKey.DATA: self.task_dict[task_id][CoreTaskKey.DATA]
+                    }
 
                     if self.task_dict[task_id][CoreTaskKey.RETURN] == CoreReturn.SUCCESS:
                         self.task_dict.pop(task_id, None)
                 else:
-                    resp = {CoreTaskKey.RETURN: CoreReturn.TASK_NOT_FOUND, CoreTaskKey.IMAGE: ''}
+                    resp = {
+                        CoreTaskKey.RETURN: CoreReturn.TASK_NOT_FOUND,
+                        CoreTaskKey.DATA: {
+                            CoreTaskKey.IMAGE: ''
+                        }
+                    }
                 self.task_dict_lock.release()
 
             self.logger.info('run_task end')

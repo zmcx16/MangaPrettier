@@ -86,10 +86,6 @@ function App() {
   useEffect(() => {
   // componentDidMount is here!
   // componentDidUpdate is here!
-
-    setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} settingPanelAPI={settingPanelAPI}/>)
-    setSettingPanel(<SettingPanel settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />)
-
     // ipc register
     ipc.on('getConfig_callback', (event, config) => {
 
@@ -98,6 +94,9 @@ function App() {
       client.connect("tcp://127.0.0.1:" + config['port']);
       // create component and pass config
       //setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
+
+      setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} settingPanelAPI={settingPanelAPI}/>)
+      setSettingPanel(<SettingPanel settingPanelRef={settingPanelRef} appAPI={appAPI} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} client={client}/>)
 
       setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} appAPI={appAPI} client={client} config={{ preview_timeout: config['preview_timeout'] }}/>)
     })
