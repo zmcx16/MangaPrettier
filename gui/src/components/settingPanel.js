@@ -22,19 +22,22 @@ const shortid = window.require('shortid')
 
 function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
+  // panel prop
+  const [taskRunning, setTaskRunning] = useState(false)
+
   // effects list
   const argsList = useRef([])
 
-  const renderArgsList = ()=>{
+  const renderArgsList = (isDisabled)=>{
     return argsList.current.map((value, index) => {
       return (
         <ListItem key={shortid.generate()} className={index % 2 ? settingPanelStyle.listItemOdd : settingPanelStyle.listItemEven}>
           <ListItemText primary={value.name} primaryTypographyProps={{ style: ({ fontWeight: 'bold' }) }} className={settingPanelStyle.argsListName} />
           <ListItemText primary={value.text} />
           <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="delete" onClick={() => {
+            <IconButton disabled={isDisabled} edge="end" aria-label="delete" onClick={() => {
               argsList.current.splice(index, 1)
-              setArgsListNodes(renderArgsList())
+              setArgsListNodes(renderArgsList(false))
             }}>
               <DeleteIcon />
             </IconButton>
@@ -44,7 +47,7 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
     })
   }
 
-  const [argsListNodes, setArgsListNodes] = useState(renderArgsList())
+  const [argsListNodes, setArgsListNodes] = useState(renderArgsList(false))
 
   // progressbar
   const [progressBar, setProgressBar] = useState(30);
@@ -111,15 +114,19 @@ function SettingPanel({ settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
             </List>
           </div>
           <div className={settingPanelStyle.argsButtons}>
-            <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={addWindowClick}>Add</Button>
+            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={addWindowClick}>Add</Button>
             <div></div>
-            <Button variant="contained" color="primary" className={settingPanelStyle.button}>Import</Button>
+            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button}>Import</Button>
             <div></div>
-            <Button variant="contained" color="primary" className={settingPanelStyle.button}>Export</Button>
+            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button}>Export</Button>
             <div></div>
             <LinearProgress variant="determinate" color="secondary" value={progressBar} className={settingPanelStyle.progressBar} />
             <div></div>
-            <Button variant="contained" color="primary" className={settingPanelStyle.exeButton}>Start</Button>
+            <Button variant="contained" color="primary" className={settingPanelStyle.exeButton}  onClick={()=>{
+              filesPanelAPI.setPanelStatus(taskRunning)
+              setArgsListNodes(renderArgsList(!taskRunning))
+              setTaskRunning(!taskRunning)
+            }}>Start</Button>
             <div></div>
           </div>
         </div>

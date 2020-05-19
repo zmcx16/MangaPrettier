@@ -59,11 +59,15 @@ function App() {
 
   const [filesPanel, setFilesPanel] = useState()
   const filesPanelRef = useRef({
-    getSelectedFile: null
+    getSelectedFile: null,
+    setPanelStatus: null
   })
   const filesPanelAPI = {
     getSelectedFile: () =>{
       return filesPanelRef.current.getSelectedFile()
+    },
+    setPanelStatus: (status) =>{
+      return filesPanelRef.current.setPanelStatus(status)
     }
   }
 

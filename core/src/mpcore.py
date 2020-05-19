@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("MangaPrettierCore")
     formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
-    file_handler = logging.FileHandler("C:\\zmcx16\\MangaPrettier\\gui\\core.log")
+    file_handler = logging.FileHandler("I:\\work\\WORK\\MangaPrettier\\gui\\core.log")
     file_handler.setFormatter(formatter)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.formatter = formatter

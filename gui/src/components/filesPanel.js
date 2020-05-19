@@ -18,6 +18,9 @@ const shortid = window.require('shortid')
 
 function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
 
+  const [panelStatus, setPanelStatus] = useState(true)
+  const fileListStatusRef = useRef(true)
+
   const fileList = useRef([])
   const fileListRef = useRef(null)
   const selectedFile = useRef({})
@@ -29,7 +32,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
   }
 
   const renderRow = ({ index, style }) => (
-    <ListItem button style={style} key={shortid.generate()} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} onClick={() => {
+    <ListItem disabled={!fileListStatusRef.current} button style={style} key={shortid.generate()} className={index % 2 ? filesPanelStyle.listItemOdd : filesPanelStyle.listItemEven} onClick={() => {
       let selectedTarget = fileList.current[index]
       selectedFile.current = selectedTarget['images'][Math.floor(Math.random() * selectedTarget['images'].length)]
       let imageWithEffect = {}
@@ -52,6 +55,12 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
     return selectedFile.current
   }
 
+  filesPanelRef.current.setPanelStatus = (status) => {
+    fileListStatusRef.current = status
+    setFileListNodes(renderFileList())
+    setPanelStatus(status)
+  }
+
   const [fileListNodes, setFileListNodes] = useState(renderFileList())
 
   return (
@@ -60,6 +69,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
         <div className={filesPanelStyle.toolBar}>
           <Button
             variant="contained"
+            disabled={!panelStatus}
             color="primary"
             startIcon={<FolderIcon />}
             onClick={useCallback(()=>{
@@ -75,6 +85,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
           <div></div>
           <Button
             variant="contained"
+            disabled={!panelStatus}
             color="primary"
             startIcon={<ImageIcon />}
             onClick={useCallback(() => {
