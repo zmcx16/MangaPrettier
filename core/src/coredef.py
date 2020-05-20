@@ -20,6 +20,7 @@ class CoreTaskKey:
     HEIGHT = 'height'
     COMMAND = 'cmd'
     PARAMETER = 'param'
+    THREAD_ID = 'thread_id'
     DATA = 'data'
     SOURCE = 'src'
     TYPE = 'type'
@@ -33,6 +34,7 @@ class CoreTaskKey:
     # task type
     PREVIEW = 'preview'
     BATCH = 'batch'
+    STOP_BATCH = 'stop_batch'
 
 
 class CoreTaskCmdKey:
@@ -41,6 +43,7 @@ class CoreTaskCmdKey:
     RUN_TASK = 'run_task'
     RUN_TASK_ASYNC = 'run_task_async'
     GET_TASK_RESULT = 'get_task_result'
+    STOP_TASK = 'stop_task'
 
 
 class BlackWhiteKey:

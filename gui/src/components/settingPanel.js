@@ -25,6 +25,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
 
   // panel prop
   const [taskRunning, setTaskRunning] = useState(false)
+  const taskRunningRef = useRef(false)
 
   // effects list
   const argsList = useRef([])
@@ -135,7 +136,13 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
         let task_id = param_t['task_id']
 
         sendCmdToCore(client, { 'cmd': 'get_task_result', 'task_id': task_id }, (error, resp) => {
-          if (error) {
+
+          if (!taskRunningRef.current){
+            console.log('task is stopped.');
+            sendCmdToCore(client, { 'cmd': 'stop_task', 'task_id': task_id }, (error, resp)=>{})
+            resolve(2)
+          }
+          else if (error) {
             console.error(error)
             reject('sendCmdToCore failed')
           } else {
@@ -146,7 +153,6 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
 
             } else if (resp['ret'] === 1) {
               resolve(resp['ret'])
-
             }
             else {
               reject('getTaskResult failed')
@@ -154,8 +160,11 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
           }
         })
       }).then((status) => {
-        if (status === 0) {
+        if (status === 0) {       // task finished
           return new Promise((resolve, reject) => { resolve('task success') })
+        }
+        else if (status === 2) {  // task stopped
+          return new Promise((resolve, reject) => { resolve('task stopped') })
         }
         else {
           return getTaskResult(param_t)
@@ -176,7 +185,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
           console.log(resp);
         }
       })
-    }, 300)
+    }, 1000)
 
     // send task command
     sendTaskCmd().then((resp) => {
@@ -219,10 +228,13 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
             <LinearProgress variant="determinate" color="secondary" value={progressBar} className={settingPanelStyle.progressBar} />
             <div></div>
             <Button variant="contained" color="primary" className={settingPanelStyle.exeButton}  onClick={()=>{
-              filesPanelAPI.setPanelStatus(taskRunning)
-              setArgsListNodes(renderArgsList(!taskRunning))
-              setTaskRunning(!taskRunning)
-              runTask()
+              taskRunningRef.current = !taskRunningRef.current
+              filesPanelAPI.setPanelStatus(!taskRunningRef.current)
+              setArgsListNodes(renderArgsList(taskRunningRef.current))
+              setTaskRunning(taskRunningRef.current)
+              if(taskRunningRef.current){
+                runTask()
+              }
             }}>Start</Button>
             <div></div>
           </div>

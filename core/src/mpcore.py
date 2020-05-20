@@ -17,8 +17,11 @@ from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
 class MangaPrettierCore(object):
 
     logger = None
-    task_dict = {}  # id:{'ret': 0, 'img': 'data'}  ret: 0: finished, 1: processing, -1: exception error
+    task_dict = {}  # id:{'ret': 0, 'data': {}}  ret: 0: finished, 1: processing, -1: exception error
     task_dict_lock = threading.Lock()
+
+    thread_status = {}  # id: status  status: True: running, not exist: stopped
+    thread_status_lock = threading.Lock()
 
     def __init__(self, mplogger):
         self.logger = mplogger
@@ -40,6 +43,9 @@ class MangaPrettierCore(object):
             resp = {}
 
             if param[CoreTaskKey.TASK] == CoreTaskKey.PREVIEW:
+
+                self.logger.info('preview task start')
+
                 image_src = param[CoreTaskKey.SOURCE]
                 image = np.array(Image.open(image_src))
 
@@ -63,7 +69,6 @@ class MangaPrettierCore(object):
                     image.save(output, format='png')
                     img_arr = output.getvalue()
 
-                self.logger.info('run_task end')
                 # print(base64.encodebytes(img_arr).decode('ascii'))
                 resp = {
                     CoreTaskKey.RETURN: CoreReturn.SUCCESS,
@@ -74,12 +79,25 @@ class MangaPrettierCore(object):
                     }
                 }
 
+                self.logger.info('preview task end')
+
             elif param[CoreTaskKey.TASK] == CoreTaskKey.BATCH:
+
+                self.logger.info('batch task start')
 
                 current = 0
                 total = 100
 
                 for i in range(100):
+
+                    self.thread_status_lock.acquire()
+                    stop = task_id not in self.thread_status
+                    self.thread_status_lock.release()
+
+                    if stop:
+                        self.logger.info('task_id ' + task_id + ' not exit, stop batch work')
+                        return {}
+
                     self.task_dict_lock.acquire()
                     self.task_dict[task_id] = {
                         CoreTaskKey.RETURN: CoreReturn.PROCESSING,
@@ -99,6 +117,91 @@ class MangaPrettierCore(object):
                     }
                 }
 
+                self.logger.info('batch task end')
+
+            self.logger.info('run_task end')
+
+            return resp
+
+        except Exception as e:
+            self.logger.error('exception = %s', e, exc_info=True)
+            return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
+
+    def __stop_task(self, param):
+
+        try:
+            self.logger.info('stop_task start')
+
+            task_id = param[CoreTaskKey.TASK_ID]
+            self.thread_status_lock.acquire()
+            if task_id in self.thread_status:
+                self.thread_status.pop(task_id, None)
+            self.thread_status_lock.release()
+
+            self.logger.info('stop_task end')
+
+            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS}
+
+        except Exception as e:
+            self.logger.error('exception = %s', e, exc_info=True)
+            return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
+
+    def __run_task_async(self, param):
+
+        try:
+            self.logger.info('run_task_async start')
+
+            task_id = str(uuid.uuid4())
+            self.task_dict_lock.acquire()
+            self.task_dict[task_id] = {
+                CoreTaskKey.RETURN: CoreReturn.PROCESSING,
+                CoreTaskKey.DATA: {}
+            }
+            self.task_dict_lock.release()
+
+            self.thread_status_lock.acquire()
+            self.thread_status[task_id] = True
+            self.thread_status_lock.release()
+
+            t_param = {CoreTaskKey.TASK_ID: task_id, CoreTaskKey.PARAMETER: param}
+            t = threading.Thread(target=self.__run_task_thread, args=(t_param,))
+            t.start()
+
+            self.logger.info('run_task_async end')
+
+            return {CoreTaskKey.RETURN: CoreReturn.SUCCESS, CoreTaskKey.TASK_ID: task_id}
+
+        except Exception as e:
+            self.logger.error('exception = %s', e, exc_info=True)
+            return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
+
+    def __get_task_result(self, param):
+
+        try:
+            self.logger.info('get_task_result start')
+
+            task_id = param[CoreTaskKey.TASK_ID]
+
+            self.task_dict_lock.acquire()
+            if task_id in self.task_dict:
+                resp = {
+                    CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
+                    CoreTaskKey.DATA: self.task_dict[task_id][CoreTaskKey.DATA]
+                }
+
+                if self.task_dict[task_id][CoreTaskKey.RETURN] == CoreReturn.SUCCESS:
+                    self.task_dict.pop(task_id, None)
+            else:
+                resp = {
+                    CoreTaskKey.RETURN: CoreReturn.TASK_NOT_FOUND,
+                    CoreTaskKey.DATA: {
+                        CoreTaskKey.IMAGE: ''
+                    }
+                }
+            self.task_dict_lock.release()
+
+            self.logger.info('get_task_result end')
+
             return resp
 
         except Exception as e:
@@ -108,16 +211,16 @@ class MangaPrettierCore(object):
     def __run_task_thread(self, t_param):
 
         resp = self.__run_task(t_param[CoreTaskKey.PARAMETER], t_param[CoreTaskKey.TASK_ID])
+        if len(resp) > 0:
+            self.task_dict_lock.acquire()
+            self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {
+                CoreTaskKey.RETURN:
+                    CoreReturn.SUCCESS if (resp is not None and resp[CoreTaskKey.RETURN] == 0) else
+                    CoreReturn.EXCEPTION_ERROR,
+                CoreTaskKey.DATA: resp[CoreTaskKey.DATA]
+            }
 
-        self.task_dict_lock.acquire()
-        self.task_dict[t_param[CoreTaskKey.TASK_ID]] = {
-            CoreTaskKey.RETURN:
-                CoreReturn.SUCCESS if (resp is not None and resp[CoreTaskKey.RETURN] == 0) else
-                CoreReturn.EXCEPTION_ERROR,
-            CoreTaskKey.DATA: resp[CoreTaskKey.DATA]
-        }
-
-        self.task_dict_lock.release()
+            self.task_dict_lock.release()
 
     def run_task(self, param):
 
@@ -131,41 +234,14 @@ class MangaPrettierCore(object):
             elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.RUN_TASK:
                 resp = self.__run_task(param)
 
+            elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.STOP_TASK:
+                resp = self.__stop_task(param)
+
             elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.RUN_TASK_ASYNC:
-
-                task_id = str(uuid.uuid4())
-                self.task_dict_lock.acquire()
-                self.task_dict[task_id] = {
-                    CoreTaskKey.RETURN: CoreReturn.PROCESSING,
-                    CoreTaskKey.DATA: {}
-                }
-                self.task_dict_lock.release()
-
-                t_param = {CoreTaskKey.TASK_ID: task_id, CoreTaskKey.PARAMETER: param}
-                t = threading.Thread(target=self.__run_task_thread, args=(t_param,))
-                t.start()
-                resp = {CoreTaskKey.RETURN: CoreReturn.SUCCESS, CoreTaskKey.TASK_ID: task_id}
+                resp = self.__run_task_async(param)
 
             elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.GET_TASK_RESULT:
-                task_id = param[CoreTaskKey.TASK_ID]
-
-                self.task_dict_lock.acquire()
-                if task_id in self.task_dict:
-                    resp = {
-                        CoreTaskKey.RETURN: self.task_dict[task_id][CoreTaskKey.RETURN],
-                        CoreTaskKey.DATA: self.task_dict[task_id][CoreTaskKey.DATA]
-                    }
-
-                    if self.task_dict[task_id][CoreTaskKey.RETURN] == CoreReturn.SUCCESS:
-                        self.task_dict.pop(task_id, None)
-                else:
-                    resp = {
-                        CoreTaskKey.RETURN: CoreReturn.TASK_NOT_FOUND,
-                        CoreTaskKey.DATA: {
-                            CoreTaskKey.IMAGE: ''
-                        }
-                    }
-                self.task_dict_lock.release()
+                resp = self.__get_task_result(param)
 
             self.logger.info('run_task end')
             return resp
