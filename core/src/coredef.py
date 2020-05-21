@@ -28,6 +28,7 @@ class CoreTaskKey:
     TASK_ID = 'task_id'
     SHOW = 'show'
     TASK = 'task'
+    IMAGES_PATH = 'imgs_path'
     CURRENT = 'current'
     TOTAL = 'total'
 

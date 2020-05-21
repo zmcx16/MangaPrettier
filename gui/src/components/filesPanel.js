@@ -55,6 +55,10 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
     return selectedFile.current
   }
 
+  filesPanelRef.current.getAllFiles = () => {
+    return fileList.current
+  }
+
   filesPanelRef.current.setPanelStatus = (status) => {
     fileListStatusRef.current = status
     setFileListNodes(renderFileList())
