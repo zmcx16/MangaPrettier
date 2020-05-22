@@ -77,7 +77,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
             color="primary"
             startIcon={<FolderIcon />}
             onClick={useCallback(()=>{
-              var material_info = ipc.sendSync('getImagesInfo', true);
+              var material_info = ipc.sendSync('getImagesInfo', true)
               if (material_info){
                 console.log(material_info)
                 fileList.current = fileList.current.concat(material_info)

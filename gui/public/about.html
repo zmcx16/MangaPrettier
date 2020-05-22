@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel='stylesheet' type='text/css' href='about.css'>
+</head>
+<body>
+    <div class="wrap">
+        <canvas id="sakura"></canvas>
+    </div>
+    <script src="sakura.js"></script>
+    <script>
+        function navMail() {
+            require('electron').ipcRenderer.send('navExec', 'mailto:zmcx16@gmail.com');
+        }
+        function navProjectPage(){
+            require('electron').ipcRenderer.send('navExec', 'https://github.com/zmcx16/MangaPrettier');
+        }
+        function navBlog() {
+            require('electron').ipcRenderer.send('navExec', 'https://blog.zmcx16.moe');
+        }
+        function navDonationPage() {
+            require('electron').ipcRenderer.send('navExec', 'https://project.zmcx16.moe/?page=about-donate');
+        }
+    </script>
+    <div class="grid">
+        <div class="cell kanban"><img src="Memo_Hotaru.png" alt="Hotaru" class="kanban_img"></div>
+        <div class="cell space"></div>
+        <div class="cell space"></div>
+        <div class="cell Author">Author:</div>
+        <div class="cell Author_val">zmcx16</div>
+        <div class="cell Illustrator">Illustrator:</div>
+        <div class="cell Illustrator_val">超愛喝榛奶</div>
+        <div class="cell Contact">Contact:</div>
+        <div class="cell Contact_val"><a href="#" onclick="navMail()">zmcx16@gmail.com</a></div>
+        <div class="cell open_source">Open Source:</div>
+        <div class="cell open_source_val"><a href="#" onclick="navProjectPage()">MangaPrettier</a></div>
+        <div class="cell Blog">Blog:</div>
+        <div class="cell Blog_val"><a href="#" onclick="navBlog()">zmcx16's Blog</a></div>
+        <div class="cell donate">Support:</div>
+        <div class="cell donate_val"><a href="#" onclick="navDonationPage()">Donate zmcx16</a></div>
+        <div class="cell copyright_val">©zmcx16 All rights reserved.</div>
+    </div>
+</body>
+</html>

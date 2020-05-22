@@ -1,5 +1,6 @@
 import sys
-from time import sleep
+import os
+from datetime import datetime
 import argparse
 import logging
 from PIL import Image
@@ -85,13 +86,11 @@ class MangaPrettierCore(object):
 
                 self.logger.info('batch task start')
 
-                #images_path = param[CoreTaskKey.IMAGES_PATH]
-                
+                output_folder_name = datetime.now().strftime("%Y%m%d-%H%M%S")
+                images_path = param[CoreTaskKey.PARAMETER][CoreTaskKey.IMAGES_PATH]
+                effects = param[CoreTaskKey.PARAMETER][CoreTaskKey.EFFECTS]
 
-                current = 0
-                total = 100
-
-                for i in range(100):
+                for image_i in range(len(images_path)):
 
                     self.thread_status_lock.acquire()
                     stop = task_id not in self.thread_status
@@ -101,22 +100,45 @@ class MangaPrettierCore(object):
                         self.logger.info('task_id ' + task_id + ' not exit, stop batch work')
                         return {}
 
+                    # -- do batch work ---
+
+                    image_src = images_path[image_i]
+                    image = np.array(Image.open(image_src))
+
+                    output_folder = os.path.join(os.path.dirname(image_src), output_folder_name)
+                    if not os.path.exists(output_folder):
+                        os.makedirs(output_folder)
+
+                    output_path = os.path.join(output_folder, os.path.basename(image_src))
+
+                    h, w, layers = image.shape
+                    if layers == 3:
+                        image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
+
+                    for config in effects:
+                        mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
+                        image = mode.run(image, config, False)
+
+                    image = Image.fromarray(image)
+                    image.save(output_path, format='png')
+
+                    # --------------------
+
                     self.task_dict_lock.acquire()
                     self.task_dict[task_id] = {
                         CoreTaskKey.RETURN: CoreReturn.PROCESSING,
                         CoreTaskKey.DATA: {
-                            CoreTaskKey.CURRENT: i,
-                            CoreTaskKey.TOTAL: total
+                            CoreTaskKey.CURRENT: image_i,
+                            CoreTaskKey.TOTAL: len(images_path)
                         }
                     }
                     self.task_dict_lock.release()
-                    sleep(0.1)
 
                 resp = {
                     CoreTaskKey.RETURN: CoreReturn.SUCCESS,
                     CoreTaskKey.DATA: {
-                        CoreTaskKey.CURRENT: 100,
-                        CoreTaskKey.TOTAL: 100
+                        CoreTaskKey.CURRENT: len(images_path),
+                        CoreTaskKey.TOTAL: len(images_path)
                     }
                 }
 

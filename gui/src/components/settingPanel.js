@@ -19,6 +19,8 @@ import { sendCmdToCore } from '../common/utils'
 
 import settingPanelStyle from "./settingPanel.module.scss"
 
+const electron = window.require('electron')
+const ipc = electron.ipcRenderer
 const shortid = window.require('shortid')
 
 function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePanelAPI, client}) {
@@ -54,8 +56,10 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   // task button
   const [taskButton, setTaskButton] = useState('start')
 
+
   // progressbar
   const [progressBar, setProgressBar] = useState(0);
+
 
   // add window
   const [addWindow, setAddWindow] = useState(null);
@@ -66,6 +70,10 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   const addWindowClose = () => {
     setAddWindow(null);
   }
+
+  const openAddWindow = Boolean(addWindow)
+  const id_addWindow = openAddWindow ? 'addWindow' : undefined
+
 
   // effects select
   const effectTypes = useRef([
@@ -105,9 +113,6 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   settingPanelRef.current.getArgsRef = () => {
     return argsRef.current
   }
-
-  const openAddWindow = Boolean(addWindow)
-  const id_addWindow = openAddWindow ? 'addWindow' : undefined
 
   const setTaskRunningUI = () => {
     setTaskButton(taskRunningRef.current ? 'cancel' : 'start')
@@ -248,9 +253,19 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
           <div className={settingPanelStyle.argsButtons}>
             <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={addWindowClick}>Add</Button>
             <div></div>
-            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button}>Import</Button>
+            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={()=>{
+              let effectSetting = ipc.sendSync('importEffects')
+              console.log(effectSetting)
+              if (effectSetting['ret'] === 0 && Object.keys(effectSetting['data']).length > 0) {
+                argsList.current = effectSetting['data']
+                setArgsListNodes(renderArgsList())
+              }
+            }}>Import</Button>
             <div></div>
-            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button}>Export</Button>
+            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={()=>{
+              let ret = ipc.sendSync('exportEffects', argsList.current)
+              console.log(ret)
+            }}>Export</Button>
             <div></div>
             <LinearProgress variant="determinate" color="secondary" value={progressBar} className={settingPanelStyle.progressBar} />
             <div></div>

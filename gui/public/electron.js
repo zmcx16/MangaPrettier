@@ -6,6 +6,7 @@ const CONFIG_FILE_NAME = 'config.json'
 const electron = require('electron')
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
+const Menu = electron.Menu
 
 const isDev = require('electron-is-dev')
 const os = require('os')
@@ -13,7 +14,7 @@ const fs = require('fs')
 const path = require('path')
 const child_process = require('child_process')
 const detect_port = require('detect-port')
-const ipc = electron.ipcMain;
+const ipc = electron.ipcMain
 
 const app_path = app.getAppPath()
 const platform = os.platform()
@@ -22,44 +23,107 @@ var core_proc = null
 var root_path = ''
 var user_data_path = ''
 
-// render config
-var render_config = {}
+// config
+var config = {}
 
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-var mainWindow;
+var mainWindow
+var aboutWindow
+
+function genMenuTemplate(lang){
+
+  return [{
+	label: 'Menu',
+	submenu: [
+	  {
+		label: lang === 'zh-TW' ? '語系' : 'Language',
+		submenu: [
+		  {
+			label: 'English',
+			click: () => {
+			  console.log('set English')
+			}
+		  },
+		  {
+			label: '繁體中文',
+			click: () => {
+			  console.log('set 繁體中文')
+			}
+		  }
+		]
+	  },
+	  { 
+		label: 'About MangaPrettier',
+		click: () => {
+		  if (!aboutWindow) {
+			console.log('open about Window')
+			aboutWindow = new BrowserWindow({
+			  icon: path.join(__dirname, 'MangaPrettier.png'),
+			  webPreferences: {
+				nodeIntegration: true
+			  },
+			  width: 640, height: 320
+			})
+
+			aboutWindow.loadURL(isDev ? 'http://localhost:3000/about.html' : `file://${path.join(__dirname, '../build/about.html')}`)
+			aboutWindow.on('closed', () => {
+			  aboutWindow = null
+			})
+			aboutWindow.removeMenu()
+		  }
+		}
+	  },
+	  {
+		label: 'Debug Console',
+		click: () => { 
+		  if (mainWindow != null && mainWindow.isFocused())
+			mainWindow.webContents.openDevTools()
+		}
+	  },
+	  { 
+		label: 'Quit',
+		click: () => { quitAll() }
+	  }
+	]
+  }] 
+}
 
 function createWindow() {
 
     // OnStart
     if (app_path.indexOf('default_app.asar') !== -1)  //dev mode
-        root_path = path.resolve(path.dirname(app_path), '..', '..', '..', '..');
+        root_path = path.resolve(path.dirname(app_path), '..', '..', '..', '..')
     else  //binary mode
-        root_path = path.resolve(path.dirname(app_path), '..');
+        root_path = path.resolve(path.dirname(app_path), '..')
 
     if (platform === 'linux') {
-        const homedir = os.homedir();
-        user_data_path = path.join(homedir, '.MangaPrettier', USER_DATA);
+        const homedir = os.homedir()
+        user_data_path = path.join(homedir, '.MangaPrettier', USER_DATA)
     } else {
-        user_data_path = path.join(root_path, USER_DATA);
+        user_data_path = path.join(root_path, USER_DATA)
     }
 
 
     if (!fs.existsSync(user_data_path)) {
-        fs.mkdirSync(user_data_path, { recursive: true });
+        fs.mkdirSync(user_data_path, { recursive: true })
     }
 
-    render_config = loadDataSync(CONFIG_FILE_NAME);
-    if (Object.keys(render_config).length === 0) {
-        render_config = {
+    config = loadDataSync(CONFIG_FILE_NAME)
+    if (Object.keys(config).length === 0) {
+        config = {
             heartbeat: 500,
-            preview_timeout: 30000
+            preview_timeout: 30000,
+            lang: 'zh-TW'
         }
-        //saveDataSync(CONFIG_FILE_NAME, render_config)
+        //saveDataSync(CONFIG_FILE_NAME, config)
     }
 
-    console.log(render_config)
+    console.log(config)
+
+    const menu = Menu.buildFromTemplate(genMenuTemplate(config['lang']))
+    Menu.setApplicationMenu(menu)
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
@@ -69,13 +133,13 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true
         }
-    });
+    })
 
     // and load the index.html of the app.
-    mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
+    mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`)
 	
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools()
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -86,44 +150,44 @@ function createWindow() {
     })
 
     // for core process
-    let port_candidate = 7777;
+    let port_candidate = 7777
     detect_port(port_candidate, (err, _port) => {
         if (err) {
-            console.log(err);
+            console.log(err)
         }
 
         if (port_candidate === _port) {
-            console.log(`port: ${port_candidate} was not occupied`);
-            render_config['port'] = port_candidate;
+            console.log(`port: ${port_candidate} was not occupied`)
+            config['port'] = port_candidate
         } else {
-            console.log(`port: ${port_candidate} was occupied, try port: ${_port}`);
-            render_config['port'] = _port;
+            console.log(`port: ${port_candidate} was occupied, try port: ${_port}`)
+            config['port'] = _port
         }
 
         
-        console.log('platform:' + platform, ', dir path:' + __dirname);
-        let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py');
+        console.log('platform:' + platform, ', dir path:' + __dirname)
+        let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py')
 
         if (!fs.existsSync(script)) {
             if (platform === 'win32') {
-                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore.exe');
+                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore.exe')
             } else if (platform === 'linux') {
-                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore');
+                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore')
             }
-            core_proc = child_process.execFile(script, ['-port', render_config['port']]);
+            core_proc = child_process.execFile(script, ['-port', config['port']])
 
         } else {
-            core_proc = child_process.spawn('python', [script, '-port', render_config['port']]);
+            core_proc = child_process.spawn('python', [script, '-port', config['port']])
         }
         
-    });
+    })
 
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', createWindow)
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -132,11 +196,11 @@ app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') {
         app.quit()
     }
-});
+})
 
 app.on('will-quit', () => {
-    killCore();
-});
+    killCore()
+})
 
 app.on('activate', function () {
     // On OS X it's common to re-create a window in the app when the
@@ -144,71 +208,81 @@ app.on('activate', function () {
     if (mainWindow === null) {
         createWindow()
     }
-});
+})
+
+ipc.on('navExec', (event, target) => {
+  if (platform == 'win32') {
+    child_process.execSync('start ' + target)
+  } else if (platform == 'darwin') {
+    child_process.execSync('open ' + target)
+  } else if (platform == 'linux') {
+    child_process.execSync('xdg-open ' + target)
+  }
+})
 
 // common function
 function walkSync(dir, filelist) {
-    var path = path || require('path');
-    var fs = fs || require('fs'), files = fs.readdirSync(dir);
-    filelist = filelist || [];
+    var path = path || require('path')
+    var fs = fs || require('fs'), files = fs.readdirSync(dir)
+    filelist = filelist || []
     files.forEach(function (file) {
         if (fs.statSync(path.join(dir, file)).isDirectory()) {
-            filelist = walkSync(path.join(dir, file), filelist);
+            filelist = walkSync(path.join(dir, file), filelist)
         }
         else {
-            filelist.push(path.join(dir, file));
+            filelist.push(path.join(dir, file))
         }
-    });
-    return filelist;
+    })
+    return filelist
 }
 
 function type_check(file_path, filter){
-  var ret = false;
+  var ret = false
   filter.some(function (ext) {
     if (file_path.toLowerCase().indexOf(ext.toLowerCase()) === file_path.length - ext.length) {
-      ret = true;
-      return true;
+      ret = true
+      return true
     } else {
-      return false;
+      return false
     }
-  });
+  })
 
-  return ret;
+  return ret
 }
 
 function saveDataSync(file_name, target_data){
-  console.log('save ' + file_name);
-  fs.writeFileSync(path.join(user_data_path, file_name), JSON.stringify(target_data), 'utf8');
+  console.log('save ' + file_name)
+  fs.writeFileSync(path.join(user_data_path, file_name), JSON.stringify(target_data), 'utf8')
 }
 
 function loadDataSync(file_name) {
-  console.log('load ' + file_name);
-  let output = '';
-  let file_path = path.join(user_data_path, file_name);
+  console.log('load ' + file_name)
+  let output = ''
+  let file_path = path.join(user_data_path, file_name)
   if (fs.existsSync(file_path)) {
-    let data = fs.readFileSync(file_path, 'utf8');
-    output = JSON.parse(data);
+    let data = fs.readFileSync(file_path, 'utf8')
+    output = JSON.parse(data)
   }
 
-  return output;
+  return output
 }
 
 function quitAll() {
-    app.quit();
-    app.exit(0);
+    app.quit()
+    app.exit(0)
 }
 
 function killCore() {
-    console.log('kill core process');
+    console.log('kill core process')
     if (core_proc)
-        core_proc.kill();
-    core_proc = null;
+        core_proc.kill()
+    core_proc = null
 }
 
 // ipc register
 ipc.on('getConfig', (event) => {
-    event.sender.send('getConfig_callback', render_config);
-});
+    event.sender.send('getConfig_callback', config)
+})
 
 
 ipc.on('getImagesInfo', (event, isFolder) => {
@@ -217,49 +291,99 @@ ipc.on('getImagesInfo', (event, isFolder) => {
   const images_filter_list = ['png', 'bmp', 'jpg']
   const filter_list = images_filter_list
   
-  var material_list = [];
+  var material_list = []
   if (isFolder){
     var foldlist = dialog.showOpenDialog(mainWindow, {
       properties: ['openDirectory', 'multiSelections']
-    });
+    })
 
     if (foldlist){
-      var filelist_temp = [];
+      var filelist_temp = []
       foldlist.forEach(function (item) {
-        walkSync(item, filelist_temp);
-      });
+        walkSync(item, filelist_temp)
+      })
 
       var images = []
       filelist_temp.forEach(function (file_path) {
         if (type_check(file_path, images_filter_list)){
           images.push(file_path)
         }
-      });
+      })
 
       foldlist.forEach(function (fold_path) {
-        material_list.push({ 'path': fold_path, 'size': 0, 'type': 'folder', 'images': images });
-      });
+        material_list.push({ 'path': fold_path, 'size': 0, 'type': 'folder', 'images': images })
+      })
     }
 
   }else{
     var filelist = dialog.showOpenDialog(mainWindow, {
       properties: ['openFile', 'multiSelections'],
       filters: [{ name: 'Image', extensions: filter_list }]
-    });
+    })
 
     if (filelist) {
       filelist.forEach(function (file_path) {
-        const stats = fs.statSync(file_path);
-        var type = '';
+        const stats = fs.statSync(file_path)
+        var type = ''
         if (type_check(file_path, images_filter_list)){
-          type = 'image';
+          type = 'image'
         }
 
-        material_list.push({ 'path': file_path, 'size': stats.size, 'type': type, 'images': [file_path]});
-      });
+        material_list.push({ 'path': file_path, 'size': stats.size, 'type': type, 'images': [file_path]})
+      })
     }
   }
 
-  event.returnValue = material_list;
+  event.returnValue = material_list
   
-});
+})
+
+
+ipc.on('importEffects', (event) => {
+
+  const { dialog } = require('electron')
+  
+  effects = {}
+  let data = null
+  try {
+    var path = dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters: [{ name: 'effect', extensions: ['json'] }]
+    })
+
+    if (path && path.length > 0) {
+      data = fs.readFileSync(path[0], 'utf8')
+      effects = JSON.parse(data)
+    }
+  }
+  catch (e) {
+      console.log(e)
+      event.returnValue = { ret: -1, exception: e.toString(), data: data, path: path }
+  }
+
+  event.returnValue = {ret: 0, data: effects}
+
+})
+
+ipc.on('exportEffects', (event, data) => {
+
+  const { dialog } = require('electron')
+
+  try {
+      var path = dialog.showSaveDialog(mainWindow, {
+      title: 'save effects setting', 
+      filters: [{ name: 'effect', extensions: ['json'] }]
+    })
+    
+    if(path){
+      fs.writeFileSync(path, JSON.stringify(data), 'utf8')
+    }
+  }
+  catch (e) {
+    console.log(e)
+    event.returnValue = { ret: -1, exception: e.toString() }
+  }
+
+  event.returnValue = {ret: 0}
+
+})
