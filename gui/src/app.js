@@ -3,10 +3,14 @@ import { StylesProvider } from "@material-ui/core/styles"
 import Modal from '@material-ui/core/Modal'
 import Backdrop from '@material-ui/core/Backdrop'
 import Fade from '@material-ui/core/Fade'
+import { IntlProvider } from "react-intl"
 
 import SettingPanel from './components/settingPanel'
 import FilesPanel from './components/filesPanel'
 import PreviewImagePanel from './components/previewImagePanel'
+
+import en from './i18n/en.js'
+import zh_tw from './i18n/zh-tw.js'
 
 import appStyle from './app.module.scss'
 
@@ -26,6 +30,9 @@ var client = new zerorpc.Client({
 
 
 function App() {
+
+  const [locale, setLocale] = useState('zh-TW')
+  const [use_lang, l10n_messages] = locale === 'zh-TW' ? ['zh-TW', zh_tw] : ['en', en]
 
   const [openModal, setOpenModal] = useState(false)
   const [modalNode, setModalNode] = useState(<div></div>)
@@ -90,7 +97,17 @@ function App() {
   useEffect(() => {
   // componentDidMount is here!
   // componentDidUpdate is here!
+  
     // ipc register
+    ipc.on('setLang', (event, lang) => {
+      console.log('setLang: ' + lang)
+      if (lang === 'zh-TW') {
+        setLocale('zh-TW')
+      } else {
+        setLocale('en')
+      }
+    })
+
     ipc.on('getConfig_callback', (event, config) => {
 
       console.log('config: ' + JSON.stringify(config))
@@ -116,37 +133,39 @@ function App() {
 
   return (
     <StylesProvider injectFirst>
-      <div className={appStyle.app}>
-        <div className={appStyle.settingPanel}>
-          {settingPanel}
+      <IntlProvider locale={use_lang} key={use_lang} defaultLocale='zh-TW' messages={l10n_messages}>
+        <div className={appStyle.app}>
+          <div className={appStyle.settingPanel}>
+            {settingPanel}
+          </div>
+          <div className={appStyle.imagePanel}>
+            {filesPanel}
+            {previewImagePanel}
+          </div>
         </div>
-        <div className={appStyle.imagePanel}>
-          {filesPanel}
-          {previewImagePanel}
+        <div className={appStyle.loadingBlock} style={{ display: loadingState ? 'block' : 'none'}}>
+          <div className={appStyle.loadingAnimation}>
+          </div>
+          <div className={appStyle.loadingBackground}>
+          </div>
         </div>
-      </div>
-      <div className={appStyle.loadingBlock} style={{ display: loadingState ? 'block' : 'none'}}>
-        <div className={appStyle.loadingAnimation}>
-        </div>
-        <div className={appStyle.loadingBackground}>
-        </div>
-      </div>
-      <Modal
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
-        className={appStyle.modal}
-        open={openModal}
-        onClose={() => {setOpenModal(false)}}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
-        <Fade in={openModal}>
-          {modalNode}
-        </Fade>
-      </Modal>
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          className={appStyle.modal}
+          open={openModal}
+          onClose={() => {setOpenModal(false)}}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+          }}
+        >
+          <Fade in={openModal}>
+            {modalNode}
+          </Fade>
+        </Modal>
+      </IntlProvider>
     </StylesProvider>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
+import { FormattedMessage } from "react-intl"
 
 import blendStyle from "./blend.module.scss"
 
@@ -13,7 +14,7 @@ function Blend({ effectType, settingPanelRef, filesPanelAPI, previewImagePanelAP
   return (
     <div className={blendStyle.root}>
       <Typography id="opacity-slider" gutterBottom>
-        Opacity
+        <FormattedMessage id={'effects.arg.opacity'} />
       </Typography>
       <Slider
         defaultValue={settingPanelRef.current.getArgsRef().opacity}

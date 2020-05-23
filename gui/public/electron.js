@@ -35,58 +35,64 @@ var aboutWindow
 function genMenuTemplate(lang){
 
   return [{
-	label: 'Menu',
-	submenu: [
-	  {
-		label: lang === 'zh-TW' ? '語系' : 'Language',
-		submenu: [
-		  {
-			label: 'English',
-			click: () => {
-			  console.log('set English')
-			}
-		  },
-		  {
-			label: '繁體中文',
-			click: () => {
-			  console.log('set 繁體中文')
-			}
-		  }
-		]
-	  },
-	  { 
-		label: 'About MangaPrettier',
-		click: () => {
-		  if (!aboutWindow) {
-			console.log('open about Window')
-			aboutWindow = new BrowserWindow({
-			  icon: path.join(__dirname, 'MangaPrettier.png'),
-			  webPreferences: {
-				nodeIntegration: true
-			  },
-			  width: 640, height: 320
-			})
+    label: 'zh-TW' ? '選單' : 'Menu',
+    submenu: [
+      {
+        label: lang === 'zh-TW' ? '語系' : 'Language',
+        submenu: [
+          {
+            label: 'English',
+            click: () => {
+              config['lang'] = 'en'
+              saveDataSync(CONFIG_FILE_NAME, config)
+              Menu.setApplicationMenu(Menu.buildFromTemplate(genMenuTemplate(config['lang'])))
+              mainWindow.webContents.send('setLang', 'en')
+            }
+          },
+          {
+            label: '繁體中文',
+            click: () => {
+              config['lang'] = 'zh-TW'
+              saveDataSync(CONFIG_FILE_NAME, config)
+              Menu.setApplicationMenu(Menu.buildFromTemplate(genMenuTemplate(config['lang'])))
+              mainWindow.webContents.send('setLang', 'zh-TW')
+            }
+          }
+        ]
+      },
+      { 
+        label: lang === 'zh-TW' ? '關於 MangaPrettier' : 'About MangaPrettier',
+        click: () => {
+          if (!aboutWindow) {
+            console.log('open about Window')
+            aboutWindow = new BrowserWindow({
+              icon: path.join(__dirname, 'MangaPrettier.png'),
+              webPreferences: {
+              nodeIntegration: true
+              },
+              width: 640, height: 320
+            })
 
-			aboutWindow.loadURL(isDev ? 'http://localhost:3000/about.html' : `file://${path.join(__dirname, '../build/about.html')}`)
-			aboutWindow.on('closed', () => {
-			  aboutWindow = null
-			})
-			aboutWindow.removeMenu()
-		  }
-		}
-	  },
-	  {
-		label: 'Debug Console',
-		click: () => { 
-		  if (mainWindow != null && mainWindow.isFocused())
-			mainWindow.webContents.openDevTools()
-		}
-	  },
-	  { 
-		label: 'Quit',
-		click: () => { quitAll() }
-	  }
-	]
+            aboutWindow.loadURL(isDev ? 'http://localhost:3000/about.html' : `file://${path.join(__dirname, '../build/about.html')}`)
+            aboutWindow.on('closed', () => {
+              aboutWindow = null
+            })
+            aboutWindow.removeMenu()
+          }
+        }
+      },
+      {
+        label: lang === 'zh-TW' ? '除錯視窗' : 'Debug Console',
+        click: () => { 
+          if (mainWindow != null && mainWindow.isFocused())
+          mainWindow.webContents.openDevTools()
+        }
+      },
+      { 
+        label: lang === 'zh-TW' ? '結束' : 'Quit',
+        click: () => { quitAll() }
+      }
+    ]
   }] 
 }
 
@@ -110,20 +116,34 @@ function createWindow() {
         fs.mkdirSync(user_data_path, { recursive: true })
     }
 
-    config = loadDataSync(CONFIG_FILE_NAME)
+    let config_default = {
+      heartbeat: 500,
+      preview_timeout: 30000,
+      lang: 'zh-TW'
+    }
+
+    //config = loadDataSync(CONFIG_FILE_NAME)
     if (Object.keys(config).length === 0) {
-        config = {
-            heartbeat: 500,
-            preview_timeout: 30000,
-            lang: 'zh-TW'
-        }
+      config = Object.assign({}, config_default)
+      //saveDataSync(CONFIG_FILE_NAME, config)
+    }else{
+      if (!('heartbeat' in config)){
+        config['heartbeat'] = config_default['heartbeat']
         //saveDataSync(CONFIG_FILE_NAME, config)
+      }
+      if (!('preview_timeout' in config)) {
+        config['preview_timeout'] = config_default['preview_timeout']
+        //saveDataSync(CONFIG_FILE_NAME, config)
+      }
+      if (!('lang' in config)){
+        config['lang'] = config_default['lang']
+        //saveDataSync(CONFIG_FILE_NAME, config)
+      }
     }
 
     console.log(config)
 
-    const menu = Menu.buildFromTemplate(genMenuTemplate(config['lang']))
-    Menu.setApplicationMenu(menu)
+    Menu.setApplicationMenu(Menu.buildFromTemplate(genMenuTemplate(config['lang'])))
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
@@ -343,7 +363,7 @@ ipc.on('importEffects', (event) => {
 
   const { dialog } = require('electron')
   
-  effects = {}
+  let effects = {}
   let data = null
   try {
     var path = dialog.showOpenDialog(mainWindow, {

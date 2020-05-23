@@ -9,6 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import { FixedSizeList } from 'react-window';
+import { FormattedMessage } from "react-intl"
 
 import filesPanelStyle from "./filesPanel.module.scss"
 
@@ -85,7 +86,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
                 setFileListNodes(renderFileList())
               }
             }, [fileList])}
-          >Folder</Button>
+          ><FormattedMessage id={'filesPanel.folder'} /></Button>
           <div></div>
           <Button
             variant="contained"
@@ -101,7 +102,7 @@ function FilesPanel({ filesPanelRef, previewImagePanelAPI, settingPanelAPI}) {
                 setFileListNodes(renderFileList())
               }
             }, [fileList])}
-          >Image</Button>
+          ><FormattedMessage id={'filesPanel.image'} /></Button>
           <ImageIcon color="primary" style={{ fontSize: 28 }} />
           <div></div>
           <span className={filesPanelStyle.imgCnt}>X {fileList.current.reduce((acc, cur) => acc + cur['images'].length, 0)}</span>

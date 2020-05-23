@@ -13,6 +13,7 @@ import InputLabel from '@material-ui/core/InputLabel'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import { FormattedMessage, useIntl } from "react-intl"
 
 import EffectArgs from './effectArgs'
 import { sendCmdToCore } from '../common/utils'
@@ -23,7 +24,28 @@ const electron = window.require('electron')
 const ipc = electron.ipcRenderer
 const shortid = window.require('shortid')
 
+const langEffectMappingTable = {
+  'multiply' : 'settingPanel.add.effects.multiply',
+  'soft_light': 'settingPanel.add.effects.soft_light',
+  'opacity': 'effects.arg.opacity'
+}
+
 function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePanelAPI, client}) {
+
+  // lang
+  const intl = useIntl()
+  const getEffectMappingLangID = (name)=>{
+    return intl.formatMessage({ id: langEffectMappingTable[name]})
+  }
+  const transEffectText = (effect_val)=>{
+    let displayText = ''
+    for (const [key, value] of Object.entries(effect_val)) {
+      if (key !== 'mode' && key !== 'type') {
+        displayText += getEffectMappingLangID(key) + ': ' + value + '; '
+      }
+    }
+    return displayText
+  }
 
   // panel prop
   const [taskRunning, setTaskRunning] = useState(false)
@@ -36,8 +58,8 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
     return argsList.current.map((value, index) => {
       return (
         <ListItem key={shortid.generate()} className={index % 2 ? settingPanelStyle.listItemOdd : settingPanelStyle.listItemEven}>
-          <ListItemText primary={value.name} primaryTypographyProps={{ style: ({ fontWeight: 'bold' }) }} className={settingPanelStyle.argsListName} />
-          <ListItemText primary={value.text} />
+          <ListItemText primary={getEffectMappingLangID(value.name)} primaryTypographyProps={{ style: ({ fontWeight: 'bold' }) }} className={settingPanelStyle.argsListName} />
+          <ListItemText primary={transEffectText(value.value)} />
           <ListItemSecondaryAction>
             <IconButton disabled={isDisabled} edge="end" aria-label="delete" onClick={() => {
               argsList.current.splice(index, 1)
@@ -54,7 +76,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   const [argsListNodes, setArgsListNodes] = useState(renderArgsList(false))
 
   // task button
-  const [taskButton, setTaskButton] = useState('start')
+  const [taskButton, setTaskButton] = useState(intl.formatMessage({ id: 'settingPanel.start' }))
 
 
   // progressbar
@@ -78,7 +100,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   // effects select
   const effectTypes = useRef([
     { name: 'multiply', value: 'multiply' },
-    { name: 'soft light', value: 'soft_light' }
+    { name: 'soft_light', value: 'soft_light' }
   ])
 
   const [effectSelect, setEffectSelect] = useState({
@@ -115,7 +137,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   }
 
   const setTaskRunningUI = () => {
-    setTaskButton(taskRunningRef.current ? 'cancel' : 'start')
+    setTaskButton(intl.formatMessage({ id: taskRunningRef.current ? 'settingPanel.cancel' : 'settingPanel.start' }))
     filesPanelAPI.setPanelStatus(!taskRunningRef.current)
     setArgsListNodes(renderArgsList(taskRunningRef.current))
     setTaskRunning(taskRunningRef.current)
@@ -230,8 +252,8 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
       console.error(msg)
       appAPI.popModalWindow(
         <>
-          <h2>Send command to core process failed.</h2>
-          <p>Please restart MangaPrettier and try again.</p>
+          <h2><FormattedMessage id={'settingPanel.message.sendCmdCoreFailed1'} /></h2>
+          <p><FormattedMessage id={'settingPanel.message.sendCmdCoreFailed2'} /></p>
         </>
       )
       taskRunningRef.current = false
@@ -251,7 +273,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
             </List>
           </div>
           <div className={settingPanelStyle.argsButtons}>
-            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={addWindowClick}>Add</Button>
+            <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={addWindowClick}><FormattedMessage id={'settingPanel.add'} /></Button>
             <div></div>
             <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={()=>{
               let effectSetting = ipc.sendSync('importEffects')
@@ -260,12 +282,12 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
                 argsList.current = effectSetting['data']
                 setArgsListNodes(renderArgsList())
               }
-            }}>Import</Button>
+            }}><FormattedMessage id={'settingPanel.import'} /></Button>
             <div></div>
             <Button variant="contained" disabled={taskRunning} color="primary" className={settingPanelStyle.button} onClick={()=>{
               let ret = ipc.sendSync('exportEffects', argsList.current)
               console.log(ret)
-            }}>Export</Button>
+            }}><FormattedMessage id={'settingPanel.export'} /></Button>
             <div></div>
             <LinearProgress variant="determinate" color="secondary" value={progressBar} className={settingPanelStyle.progressBar} />
             <div></div>
@@ -279,12 +301,12 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
 
               if (imgs_path.length === 0) {
                 appAPI.popModalWindow(
-                  <h2>No image in the file list.</h2>
+                  <h2><FormattedMessage id={'settingPanel.message.noImage'} /></h2>
                 )
               }
               else if (effects.length === 0) {
                 appAPI.popModalWindow(
-                  <h2>No effect in the setting panel.</h2>
+                  <h2><FormattedMessage id={'settingPanel.message.noEffect'} /></h2>
                 )
               }
               else{
@@ -315,7 +337,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
         >
           <div className={settingPanelStyle.addWindow}>
             <FormControl variant="outlined" className={settingPanelStyle.addWindowEffectSelect}>
-              <InputLabel htmlFor="effect-select">Effects</InputLabel>
+              <InputLabel htmlFor="effect-select"><FormattedMessage id={'settingPanel.add.effects'} /></InputLabel>
               <Select
                 native
                 value={effectSelect.effectType}
@@ -328,7 +350,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
               >
                 {
                   effectTypes.current.map((value, index) => {
-                    return <option key={shortid.generate()} value={value.value}>{value.name}</option>
+                    return <option key={shortid.generate()} value={value.value}>{getEffectMappingLangID(value.name)}</option>
                   })
                 }
               </Select>
@@ -341,18 +363,12 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
                 
                 console.log(argsRef.current)
                 let displayName = argsRef.current.mode
-                let displayText = ''
-                for (const [key, value] of Object.entries(argsRef.current)) {
-                  if (key !== 'mode' && key !== 'type'){
-                    displayText += key + ': ' + value + '; '
-                  }
-                }
-                argsList.current.push({ name: displayName, text: displayText, value: argsRef.current })
+                argsList.current.push({ name: displayName, value: argsRef.current })
                 setArgsListNodes(renderArgsList())
                 addWindowClose()
-              }}>Ok</Button>
+              }}><FormattedMessage id={'settingPanel.ok'} /></Button>
               <div></div>
-              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={addWindowClose}>Cancel</Button>
+              <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={addWindowClose}><FormattedMessage id={'settingPanel.cancel'} /></Button>
             </div>
           </div>
         </Popover>

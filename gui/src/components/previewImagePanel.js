@@ -9,6 +9,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Switch from '@material-ui/core/Switch'
 import ScrollContainer from 'react-indiana-drag-scroll'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import { FormattedMessage, useIntl } from "react-intl"
 
 import { sendCmdToCore } from '../common/utils'
 
@@ -69,6 +70,9 @@ const IOSSwitch = withStyles((theme) => ({
 
 
 function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
+  
+  // lang
+  const intl = useIntl()
 
   const toolBarRef = useRef(null)
   const [enableEffect, setEnableEffect] = useState(true)
@@ -182,8 +186,8 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
       console.error(msg)
       appAPI.popModalWindow(
         <>
-          <h2>Send command to core process failed.</h2>
-          <p>Please restart MangaPrettier and try again.</p>
+          <h2><FormattedMessage id={'settingPanel.message.sendCmdCoreFailed1'} /></h2>
+          <p><FormattedMessage id={'settingPanel.message.sendCmdCoreFailed2'} /></p>
         </>
       )
       clearInterval(task_heartbeat.current)
@@ -208,7 +212,7 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
                 color="primary"
               />
             }
-            label="Enable Effect"
+            label={intl.formatMessage({ id: 'previewImagePanel.enableEffect'})}
           />
           <div></div>
           <IconButton variant="contained" color="secondary" onClick={useCallback(()=>{
@@ -223,7 +227,7 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
             <ZoomOutIcon fontSize="large" />
           </IconButton >
           <div></div>
-          <span className={previewImagePanelStyle.imageScale}>Scale: {imageScale.toFixed(1)}</span>
+          <span className={previewImagePanelStyle.imageScale}><FormattedMessage id={'previewImagePanel.scale'} />{imageScale.toFixed(1)}</span>
           <div></div>
         </div>
         <div className={previewImagePanelStyle.imageNode} style={{ maxWidth: toolBarRef.current === null ? 2000 : toolBarRef.current.clientWidth-2 /* diff error */}}>
