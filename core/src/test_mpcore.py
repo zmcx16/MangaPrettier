@@ -5,52 +5,41 @@ import logging
 import time
 from assertpy import assert_that
 
-from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlackWhiteKey
+from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlendKey
 from mpcore import MangaPrettierCore
 
 
 def test_soft_light(logger, show=False):
 
-    param = {
-        CoreTaskKey.COMMAND: CoreTaskCmdKey.RUN_TASK,
-        CoreTaskKey.TYPE: CoreModeKey.BLACK_WHITE,
-        CoreTaskKey.SOURCE: os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'Yu-Gi-Oh_01.png'),
-        CoreTaskKey.EFFECTS: [
-            {CoreModeKey.MODE: BlackWhiteKey.SOFT_LIGHT, BlackWhiteKey.OPACITY: .8},
-            {CoreModeKey.MODE: BlackWhiteKey.SOFT_LIGHT, BlackWhiteKey.OPACITY: .8},
-            {CoreModeKey.MODE: BlackWhiteKey.SOFT_LIGHT, BlackWhiteKey.OPACITY: .8}
-        ],
-        CoreTaskKey.SHOW: show
-    }
+    effects = [
+        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.SOFT_LIGHT, BlendKey.OPACITY: .8},
+        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.SOFT_LIGHT, BlendKey.OPACITY: .8}
+    ]
 
-    core = MangaPrettierCore(logger)
-    assert_that(core.run_task(param)[CoreTaskKey.RETURN]).is_zero()
+    source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'Yu-Gi-Oh_01.png')
+
+    do_preview_test(logger, effects, source, show)
 
 
 def test_multiply(logger, show=False):
 
-    param = {
-        CoreTaskKey.COMMAND: CoreTaskCmdKey.RUN_TASK,
-        CoreTaskKey.TYPE: CoreModeKey.BLACK_WHITE,
-        CoreTaskKey.SOURCE: os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
-        CoreTaskKey.EFFECTS: [
-            {CoreModeKey.MODE: BlackWhiteKey.MULTIPLY, BlackWhiteKey.OPACITY: .8}
-        ],
-        CoreTaskKey.SHOW: show
-    }
-    core = MangaPrettierCore(logger)
-    assert_that(core.run_task(param)[CoreTaskKey.RETURN]).is_zero()
+    effects = [
+        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.MULTIPLY, BlendKey.OPACITY: .8},
+        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.MULTIPLY, BlendKey.OPACITY: .8}
+    ]
+
+    source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg')
+
+    do_preview_test(logger, effects, source, show)
 
 
-def test_multiply_async(logger, show=False):
+def do_preview_test(logger, effects, source, show=False):
 
     param = {
         CoreTaskKey.COMMAND: CoreTaskCmdKey.RUN_TASK_ASYNC,
-        CoreTaskKey.TYPE: CoreModeKey.BLACK_WHITE,
-        CoreTaskKey.SOURCE: os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg'),
-        CoreTaskKey.EFFECTS: [
-            {CoreModeKey.MODE: BlackWhiteKey.MULTIPLY, BlackWhiteKey.OPACITY: .8}
-        ],
+        CoreTaskKey.TASK: CoreTaskKey.PREVIEW,
+        CoreTaskKey.SOURCE: source,
+        CoreTaskKey.EFFECTS: effects,
         CoreTaskKey.SHOW: show
     }
     core = MangaPrettierCore(logger)
@@ -91,4 +80,3 @@ if __name__ == "__main__":
 
     # test_soft_light(logger, True)
     # test_multiply(logger, True)
-    test_multiply_async(logger, True)

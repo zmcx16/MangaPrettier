@@ -1,12 +1,14 @@
 // def
 const USER_DATA = 'user_data'
 const CONFIG_FILE_NAME = 'config.json'
+const LOG_NAME = 'app.log'
 
 // Module
 const electron = require('electron')
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
 const Menu = electron.Menu
+const log = require('electron-log')
 
 const isDev = require('electron-is-dev')
 const os = require('os')
@@ -22,6 +24,7 @@ var core_proc = null
 
 var root_path = ''
 var user_data_path = ''
+var log_path = ''
 
 // config
 var config = {}
@@ -32,10 +35,17 @@ var config = {}
 var mainWindow
 var aboutWindow
 
+
+// log setting
+log.transports.file.level = true
+log.transports.console.level = true
+console.log = log.log
+console.error = log.error
+
 function genMenuTemplate(lang){
 
   return [{
-    label: 'zh-TW' ? '選單' : 'Menu',
+    label: lang === 'zh-TW' ? '選單' : 'Menu',
     submenu: [
       {
         label: lang === 'zh-TW' ? '語系' : 'Language',
@@ -98,109 +108,124 @@ function genMenuTemplate(lang){
 
 function createWindow() {
 
-    // OnStart
-    if (app_path.indexOf('default_app.asar') !== -1)  //dev mode
-        root_path = path.resolve(path.dirname(app_path), '..', '..', '..', '..')
-    else  //binary mode
-        root_path = path.resolve(path.dirname(app_path), '..')
+  // OnStart
+  if (app_path.indexOf('gui') !== -1){  //dev mode
+    root_path = app_path
+  }else{  //binary mode
+    root_path = path.resolve(path.dirname(app_path), '..')
+  }
+  if (platform === 'linux') {
+    const homedir = os.homedir()
+    user_data_path = path.join(homedir, '.MangaPrettier', USER_DATA)
+    log_path = path.join(homedir, '.MangaPrettier')
+  } else {
+    user_data_path = path.join(root_path, USER_DATA)
+    log_path = root_path
+  }
+  log.transports.file.resolvePath = ()=>{ return path.join(log_path, LOG_NAME) }
 
-    if (platform === 'linux') {
-        const homedir = os.homedir()
-        user_data_path = path.join(homedir, '.MangaPrettier', USER_DATA)
-    } else {
-        user_data_path = path.join(root_path, USER_DATA)
-    }
 
+  if (!fs.existsSync(user_data_path)) {
+      fs.mkdirSync(user_data_path, { recursive: true })
+  }
 
-    if (!fs.existsSync(user_data_path)) {
-        fs.mkdirSync(user_data_path, { recursive: true })
-    }
+  let config_default = {
+    heartbeat: 500,
+    preview_timeout: 30000,
+    lang: 'zh-TW'
+  }
 
-    let config_default = {
-      heartbeat: 500,
-      preview_timeout: 30000,
-      lang: 'zh-TW'
-    }
-
-    //config = loadDataSync(CONFIG_FILE_NAME)
+  try{
+    config = loadDataSync(CONFIG_FILE_NAME)
     if (Object.keys(config).length === 0) {
       config = Object.assign({}, config_default)
-      //saveDataSync(CONFIG_FILE_NAME, config)
+      saveDataSync(CONFIG_FILE_NAME, config)
     }else{
+      let isUpdate = false
       if (!('heartbeat' in config)){
         config['heartbeat'] = config_default['heartbeat']
-        //saveDataSync(CONFIG_FILE_NAME, config)
+        isUpdate = true
       }
       if (!('preview_timeout' in config)) {
         config['preview_timeout'] = config_default['preview_timeout']
-        //saveDataSync(CONFIG_FILE_NAME, config)
+        isUpdate = true
       }
       if (!('lang' in config)){
         config['lang'] = config_default['lang']
-        //saveDataSync(CONFIG_FILE_NAME, config)
+        isUpdate = true
+      }
+
+      if(isUpdate){
+        saveDataSync(CONFIG_FILE_NAME, config)
       }
     }
+  } catch(e){
+    console.log('load config failed, ex = ' + e.toString())
+    config = Object.assign({}, config_default)
+    //saveDataSync(CONFIG_FILE_NAME, config)
+  }
 
-    console.log(config)
+  console.log(config)
 
-    Menu.setApplicationMenu(Menu.buildFromTemplate(genMenuTemplate(config['lang'])))
 
-    // Create the browser window.
-    mainWindow = new BrowserWindow({
-        width: 1024, 
-        height: 600,
-        icon: path.join(__dirname, 'MangaPrettier.png'),
-        webPreferences: {
-            nodeIntegration: true
-        }
-    })
+  Menu.setApplicationMenu(Menu.buildFromTemplate(genMenuTemplate(config['lang'])))
 
-    // and load the index.html of the app.
-    mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`)
-	
-    // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+      width: 1024, 
+      height: 600,
+      icon: path.join(__dirname, 'MangaPrettier.png'),
+      webPreferences: {
+          nodeIntegration: true
+      }
+  })
 
-    // Emitted when the window is closed.
-    mainWindow.on('closed', function () {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        mainWindow = null
-    })
+  // and load the index.html of the app.
+  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`)
 
-    // for core process
-    let port_candidate = 7777
-    detect_port(port_candidate, (err, _port) => {
-        if (err) {
-            console.log(err)
-        }
+  // Open the DevTools.
+  mainWindow.webContents.openDevTools()
 
-        if (port_candidate === _port) {
-            console.log(`port: ${port_candidate} was not occupied`)
-            config['port'] = port_candidate
-        } else {
-            console.log(`port: ${port_candidate} was occupied, try port: ${_port}`)
-            config['port'] = _port
-        }
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function () {
+      // Dereference the window object, usually you would store windows
+      // in an array if your app supports multi windows, this is the time
+      // when you should delete the corresponding element.
+      mainWindow = null
+  })
 
-        
-        console.log('platform:' + platform, ', dir path:' + __dirname)
-        let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py')
+  // for core process
+  let port_candidate = 7777
+  detect_port(port_candidate, (err, _port) => {
+    if (err) {
+      console.log(err)
+    }
 
-        if (!fs.existsSync(script)) {
-            if (platform === 'win32') {
-                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore.exe')
-            } else if (platform === 'linux') {
-                script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore')
-            }
-            core_proc = child_process.execFile(script, ['-port', config['port']])
+    if (port_candidate === _port) {
+      console.log(`port: ${port_candidate} was not occupied`)
+      config['port'] = port_candidate
+    } else {
+      console.log(`port: ${port_candidate} was occupied, try port: ${_port}`)
+      config['port'] = _port
+    }
 
-        } else {
-            core_proc = child_process.spawn('python', [script, '-port', config['port']])
-        }
-        
-    })
+    
+    console.log('platform:' + platform, ', dir path:' + __dirname)
+    let script = path.join(path.resolve(__dirname, '..', '..'), 'core', 'src', 'mpcore.py')
+
+    if (!fs.existsSync(script)) {
+      if (platform === 'win32') {
+          script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore.exe')
+      } else if (platform === 'linux') {
+          script = path.join(path.resolve(__dirname, '..'), 'core', 'mpcore')
+      }
+      core_proc = child_process.execFile(script, ['-port', config['port'], '-log-path', log_path])
+
+    } else {
+      core_proc = child_process.spawn('python', [script, '-port', config['port'], '-log-path', log_path])
+    }
+      
+  })
 
 }
 
@@ -211,49 +236,53 @@ app.on('ready', createWindow)
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-        app.quit()
-    }
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+      app.quit()
+  }
 })
 
 app.on('will-quit', () => {
-    killCore()
+  killCore()
 })
 
 app.on('activate', function () {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) {
-        createWindow()
-    }
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) {
+      createWindow()
+  }
+})
+
+ipc.on('getLogPath', (event) => {
+  event.returnValue = log_path
 })
 
 ipc.on('navExec', (event, target) => {
-  if (platform == 'win32') {
+  if (platform === 'win32') {
     child_process.execSync('start ' + target)
-  } else if (platform == 'darwin') {
+  } else if (platform === 'darwin') {
     child_process.execSync('open ' + target)
-  } else if (platform == 'linux') {
+  } else if (platform === 'linux') {
     child_process.execSync('xdg-open ' + target)
   }
 })
 
 // common function
 function walkSync(dir, filelist) {
-    var path = path || require('path')
-    var fs = fs || require('fs'), files = fs.readdirSync(dir)
-    filelist = filelist || []
-    files.forEach(function (file) {
-        if (fs.statSync(path.join(dir, file)).isDirectory()) {
-            filelist = walkSync(path.join(dir, file), filelist)
-        }
-        else {
-            filelist.push(path.join(dir, file))
-        }
-    })
-    return filelist
+  var path = path || require('path')
+  var fs = fs || require('fs'), files = fs.readdirSync(dir)
+  filelist = filelist || []
+  files.forEach(function (file) {
+      if (fs.statSync(path.join(dir, file)).isDirectory()) {
+          filelist = walkSync(path.join(dir, file), filelist)
+      }
+      else {
+          filelist.push(path.join(dir, file))
+      }
+  })
+  return filelist
 }
 
 function type_check(file_path, filter){
@@ -301,7 +330,7 @@ function killCore() {
 
 // ipc register
 ipc.on('getConfig', (event) => {
-    event.sender.send('getConfig_callback', config)
+  event.sender.send('getConfig_callback', config)
 })
 
 

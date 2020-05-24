@@ -3,71 +3,15 @@ import IconButton from '@material-ui/core/IconButton'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import ZoomOutIcon from '@material-ui/icons/ZoomOut'
 import TextField from '@material-ui/core/TextField'
-import { withStyles } from '@material-ui/core/styles'
 import { blue, cyan } from '@material-ui/core/colors'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Switch from '@material-ui/core/Switch'
 import ScrollContainer from 'react-indiana-drag-scroll'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { FormattedMessage, useIntl } from "react-intl"
 
-import { sendCmdToCore } from '../common/utils'
+import { sendCmdToCore, IOSSwitch } from '../common/utils'
 
 import previewImagePanelStyle from "./previewImagePanel.module.scss"
-
-const IOSSwitch = withStyles((theme) => ({
-  root: {
-    width: 52,
-    height: 26,
-    padding: 0,
-    margin: theme.spacing(1),
-  },
-  switchBase: {
-    padding: 1,
-    '&$checked': {
-      transform: 'translateX(26px)',
-      color: theme.palette.common.white,
-      '& + $track': {
-        backgroundColor: 'violet',
-        opacity: 1,
-        border: 'none',
-      },
-    },
-    '&$focusVisible $thumb': {
-      color: 'violet',
-      border: '6px solid #fff',
-    },
-  },
-  thumb: {
-    width: 24,
-    height: 24,
-  },
-  track: {
-    borderRadius: 26 / 2,
-    border: `1px solid ${theme.palette.grey[400]}`,
-    backgroundColor: 'grey',
-    opacity: 1,
-    transition: theme.transitions.create(['background-color', 'border']),
-  },
-  checked: {},
-  focusVisible: {},
-}))(({ classes, ...props }) => {
-  return (
-    <Switch
-      focusVisibleClassName={classes.focusVisible}
-      disableRipple
-      classes={{
-        root: classes.root,
-        switchBase: classes.switchBase,
-        thumb: classes.thumb,
-        track: classes.track,
-        checked: classes.checked,
-      }}
-      {...props}
-    />
-  );
-});
-
 
 function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
   
@@ -82,6 +26,15 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
   const [imageInfo, setImageInfo] = useState({width: 100, height: 100})
 
   const task_heartbeat = useRef(0)
+
+  // PreviewImagePanel API
+  previewImagePanelRef.current.getEnableEffect = () =>{
+    return enableEffect
+  }
+
+  previewImagePanelRef.current.setEnableEffect = (val) =>{
+    setEnableEffect(val)
+  }
 
   previewImagePanelRef.current.renderImageNode = (args) => {
 
@@ -169,7 +122,7 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
           console.log(resp);
         }
       })
-    }, 300)
+    }, config['heartbeat'])
 
     // send task command
     sendTaskCmd().then((resp) => {

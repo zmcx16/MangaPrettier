@@ -7,7 +7,7 @@ class CoreReturn:
 
 class CoreModeKey:
     MODE = 'mode'
-    BLACK_WHITE = 'bw'
+    BLEND = 'blend'
 
 
 class CoreTaskKey:
@@ -47,7 +47,7 @@ class CoreTaskCmdKey:
     STOP_TASK = 'stop_task'
 
 
-class BlackWhiteKey:
+class BlendKey:
     # config
     OPACITY = 'opacity'
 

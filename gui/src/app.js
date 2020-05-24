@@ -85,9 +85,17 @@ function App() {
 
   const [previewImagePanel, setPreviewImagePanel] = useState()
   const previewImagePanelRef = useRef({
+    getEnableEffect: null,
+    setEnableEffect: null,
     renderImageNode: null
   })
   const previewImagePanelAPI = {
+    getEnableEffect: () => {
+      return previewImagePanelRef.current.getEnableEffect()
+    },
+    setEnableEffect: (val) => {
+      previewImagePanelRef.current.setEnableEffect(val)
+    },
     renderImageNode: (args) => {
       previewImagePanelRef.current.renderImageNode(args)
     }
@@ -97,7 +105,7 @@ function App() {
   useEffect(() => {
   // componentDidMount is here!
   // componentDidUpdate is here!
-  
+
     // ipc register
     ipc.on('setLang', (event, lang) => {
       console.log('setLang: ' + lang)
@@ -113,13 +121,12 @@ function App() {
       console.log('config: ' + JSON.stringify(config))
       // connect to mpcore
       client.connect("tcp://127.0.0.1:" + config['port']);
-      // create component and pass config
-      //setPreviewImage(<PreviewImage coreStatusRef={coreStatusRef} port={config['port']} client={client} config={{preview_timeout: config['preview_timeout']}} />)
+      
+      setLocale(config['lang'])
 
       setFilesPanel(<FilesPanel filesPanelRef={filesPanelRef} previewImagePanelAPI={previewImagePanelAPI} settingPanelAPI={settingPanelAPI}/>)
-      setSettingPanel(<SettingPanel settingPanelRef={settingPanelRef} appAPI={appAPI} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} client={client}/>)
-
-      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} appAPI={appAPI} client={client} config={{ preview_timeout: config['preview_timeout'] }}/>)
+      setSettingPanel(<SettingPanel settingPanelRef={settingPanelRef} appAPI={appAPI} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} client={client} config={config}/>)
+      setPreviewImagePanel(<PreviewImagePanel previewImagePanelRef={previewImagePanelRef} appAPI={appAPI} client={client} config={config}/>)
     })
 
     ipc.send('getConfig')

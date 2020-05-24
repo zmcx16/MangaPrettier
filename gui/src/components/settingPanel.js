@@ -11,12 +11,13 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import InputLabel from '@material-ui/core/InputLabel'
 import FormControl from '@material-ui/core/FormControl'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Select from '@material-ui/core/Select'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { FormattedMessage, useIntl } from "react-intl"
 
 import EffectArgs from './effectArgs'
-import { sendCmdToCore } from '../common/utils'
+import { sendCmdToCore, IOSSwitch } from '../common/utils'
 
 import settingPanelStyle from "./settingPanel.module.scss"
 
@@ -30,7 +31,7 @@ const langEffectMappingTable = {
   'opacity': 'effects.arg.opacity'
 }
 
-function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePanelAPI, client}) {
+function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePanelAPI, client, config}) {
 
   // lang
   const intl = useIntl()
@@ -86,6 +87,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   // add window
   const [addWindow, setAddWindow] = useState(null);
   const addWindowClick = (event) => {
+    setEnableEffect(previewImagePanelAPI.getEnableEffect())
     setAddWindow(event.currentTarget)
   }
 
@@ -96,6 +98,8 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   const openAddWindow = Boolean(addWindow)
   const id_addWindow = openAddWindow ? 'addWindow' : undefined
 
+  // enable effect switch
+  const [enableEffect, setEnableEffect] = useState(true)
 
   // effects select
   const effectTypes = useRef([
@@ -188,7 +192,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
             console.error(error)
             reject('sendCmdToCore failed')
           } else {
-            console.log(resp);
+            console.log(resp)
 
             if (resp['ret'] === 0) {
               setProgressBar(100)
@@ -206,10 +210,10 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
         })
       }).then((status) => {
         if (status === 0) {       // task finished
-          return new Promise((resolve, reject) => { resolve('Mission Complete!') })
+          return new Promise((resolve, reject) => { resolve(intl.formatMessage({ id: 'settingPanel.message.missionComplete' })) })
         }
         else if (status === 2) {  // task stopped
-          return new Promise((resolve, reject) => { resolve('Task Stopped!') })
+          return new Promise((resolve, reject) => { resolve(intl.formatMessage({ id: 'settingPanel.message.taskStop' })) })
         }
         else {
           return getTaskResult(param_t)
@@ -230,7 +234,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
           console.log(resp);
         }
       })
-    }, 300)
+    }, config['heartbeat'])
 
     // send task command
     sendTaskCmd().then((resp) => {
@@ -336,25 +340,42 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
           }}
         >
           <div className={settingPanelStyle.addWindow}>
-            <FormControl variant="outlined" className={settingPanelStyle.addWindowEffectSelect}>
-              <InputLabel htmlFor="effect-select"><FormattedMessage id={'settingPanel.add.effects'} /></InputLabel>
-              <Select
-                native
-                value={effectSelect.effectType}
-                onChange={effectSelectChange}
-                label="Effect"
-                inputProps={{
-                  name: 'effectType',
-                  id: 'effect-select',
-                }}
-              >
-                {
-                  effectTypes.current.map((value, index) => {
-                    return <option key={shortid.generate()} value={value.value}>{getEffectMappingLangID(value.name)}</option>
-                  })
+            <div className={settingPanelStyle.effectMain}>
+              <FormControl variant="outlined" className={settingPanelStyle.addWindowEffectSelect}>
+                <InputLabel htmlFor="effect-select"><FormattedMessage id={'settingPanel.add.effects'} /></InputLabel>
+                <Select
+                  native
+                  value={effectSelect.effectType}
+                  onChange={effectSelectChange}
+                  label="Effect"
+                  inputProps={{
+                    name: 'effectType',
+                    id: 'effect-select',
+                  }}
+                >
+                  {
+                    effectTypes.current.map((value, index) => {
+                      return <option key={shortid.generate()} value={value.value}>{getEffectMappingLangID(value.name)}</option>
+                    })
+                  }
+                </Select>
+              </FormControl>
+              <FormControlLabel
+                control={
+                  <IOSSwitch 
+                    checked={enableEffect}
+                    onChange={(event)=>{
+                      setEnableEffect(event.target.checked)
+                      previewImagePanelAPI.setEnableEffect(event.target.checked)
+                      console.log(enableEffect)
+                    }}
+                    name="enableEffect"
+                    color="primary"
+                  />
                 }
-              </Select>
-            </FormControl>
+                label={intl.formatMessage({ id: 'previewImagePanel.enableEffect'})}
+              />
+            </div>
             <div className={settingPanelStyle.addWindowEffectArgs}>
               {effectArgsNode}
             </div>

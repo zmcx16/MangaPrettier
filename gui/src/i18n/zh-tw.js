@@ -12,6 +12,8 @@ const zh_TW = {
   'settingPanel.message.noEffect': `設置面板內沒有設置任何特效`,
   'settingPanel.message.sendCmdCoreFailed1': `無法取得主程式狀態...`,
   'settingPanel.message.sendCmdCoreFailed2': `請重啟程式並再試一次。`,
+  'settingPanel.message.taskStop': `工作已停止!`,
+  'settingPanel.message.missionComplete': `任務完成!`,
   'effects.arg.opacity': `透明度`,
   'filesPanel.folder': `資料夾`,
   'filesPanel.image': `圖檔`,

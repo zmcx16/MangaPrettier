@@ -11,7 +11,7 @@ import io
 import uuid
 import threading
 
-from blackwhite import BlackWhite
+from blend import Blend
 from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
 
 
@@ -48,11 +48,9 @@ class MangaPrettierCore(object):
                 self.logger.info('preview task start')
 
                 image_src = param[CoreTaskKey.SOURCE]
-                image = np.array(Image.open(image_src))
-
-                h, w, layers = image.shape
-                if layers == 3:
-                    image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
+                image_o = Image.open(image_src)
+                image = np.array(image_o.convert('RGBA'))
+                h, w = image.shape[:2]
 
                 # self.logger.debug(image)
                 # self.logger.debug(image.shape)
@@ -103,17 +101,14 @@ class MangaPrettierCore(object):
                     # -- do batch work ---
 
                     image_src = images_path[image_i]
-                    image = np.array(Image.open(image_src))
+                    image_o = Image.open(image_src)
+                    image = np.array(image_o.convert('RGBA'))
 
                     output_folder = os.path.join(os.path.dirname(image_src), output_folder_name)
                     if not os.path.exists(output_folder):
                         os.makedirs(output_folder)
 
                     output_path = os.path.join(output_folder, os.path.basename(image_src))
-
-                    h, w, layers = image.shape
-                    if layers == 3:
-                        image = np.dstack((image, np.zeros((h, w), dtype=np.uint8) + 255))
 
                     for config in effects:
                         mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
@@ -256,9 +251,6 @@ class MangaPrettierCore(object):
                     param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.TEST_CONNECT:
                 resp = self.__test_connect()
 
-            elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.RUN_TASK:
-                resp = self.__run_task(param)
-
             elif param[CoreTaskKey.COMMAND] == CoreTaskCmdKey.STOP_TASK:
                 resp = self.__stop_task(param)
 
@@ -276,25 +268,30 @@ class MangaPrettierCore(object):
             return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
 
     ModeDict = {
-        CoreModeKey.BLACK_WHITE: BlackWhite
+        CoreModeKey.BLEND: Blend
     }
 
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-port", dest="port")
+    parser.add_argument("-log-path", dest="log_path")
+    args = parser.parse_args()
+
     logger = logging.getLogger("MangaPrettierCore")
     formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s - %(funcName)s (%(lineno)d)')
-    file_handler = logging.FileHandler("I:\\work\\WORK\\MangaPrettier\\gui\\core.log")
+    file_handler = logging.FileHandler(os.path.join(args.log_path, 'core.log'))
     file_handler.setFormatter(formatter)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.formatter = formatter
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
     logger.setLevel(logging.DEBUG)
+
+    logger.info('mpcore start')
+
     try:
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-port", dest="port")
-        args = parser.parse_args()
         if args.port:
             s = zerorpc.Server(MangaPrettierCore(logger))
             s.bind("tcp://0.0.0.0:" + args.port)

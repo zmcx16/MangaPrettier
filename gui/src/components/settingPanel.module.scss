@@ -55,6 +55,14 @@
   align-items: center;
 }
 
+.effectMain{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-items: normal;
+  align-items: center;
+  column-gap: 50px;
+}
+
 .outputWindow{
   min-width: 300px;
   margin: 20px;

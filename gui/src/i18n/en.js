@@ -12,6 +12,8 @@ const en = {
   'settingPanel.message.noEffect': `No effect in the setting panel.`,
   'settingPanel.message.sendCmdCoreFailed1': `Send command to core process failed.`,
   'settingPanel.message.sendCmdCoreFailed2': `Please restart MangaPrettier and try again.`,
+  'settingPanel.message.taskStop': `Task Stopped!`,
+  'settingPanel.message.missionComplete': `Mission Complete!`,
   'effects.arg.opacity': `Opacity`,
   'filesPanel.folder': `Folder`,
   'filesPanel.image': `Image`,

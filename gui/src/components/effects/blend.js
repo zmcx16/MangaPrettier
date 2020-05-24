@@ -8,7 +8,7 @@ import blendStyle from "./blend.module.scss"
 function Blend({ effectType, settingPanelRef, filesPanelAPI, previewImagePanelAPI}) {
 
   const argsRef = useRef()
-  argsRef.current = { type: 'bw', mode: effectType, opacity: .8 }
+  argsRef.current = { type: 'blend', mode: effectType, opacity: .8 }
   settingPanelRef.current.setArgsRef(argsRef.current)
 
   return (

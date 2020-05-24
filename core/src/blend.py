@@ -2,14 +2,14 @@ from PIL import Image
 import numpy as np
 from blend_modes import soft_light, multiply
 
-from coredef import CoreModeKey, BlackWhiteKey
+from coredef import CoreModeKey, BlendKey
 
 
-class BlackWhite(object):
+class Blend(object):
 
     @staticmethod
     def run(image, config, show):
-        return BlackWhite.__do_blend(image, config[CoreModeKey.MODE], config[BlackWhiteKey.OPACITY], show)
+        return Blend.__do_blend(image, config[CoreModeKey.MODE], config[BlendKey.OPACITY], show)
 
     @staticmethod
     def __do_blend(image, mode, opacity, show=False):
@@ -20,7 +20,7 @@ class BlackWhite(object):
         foreground_img = image
         foreground_img_float = foreground_img.astype(float)  # Inputs to blend_modes need to be floats.
 
-        blended_img_float = BlackWhite.EffectFunc[mode](background_img_float, foreground_img_float, opacity)
+        blended_img_float = Blend.EffectFunc[mode](background_img_float, foreground_img_float, opacity)
 
         blended_img = np.uint8(blended_img_float)  # Image needs to be converted back to uint8 type for PIL handling.
 
@@ -37,6 +37,6 @@ class BlackWhite(object):
         return blended_img
 
     EffectFunc = {
-        BlackWhiteKey.SOFT_LIGHT: soft_light,
-        BlackWhiteKey.MULTIPLY: multiply
+        BlendKey.SOFT_LIGHT: soft_light,
+        BlendKey.MULTIPLY: multiply
     }
