@@ -26,6 +26,12 @@ const ipc = electron.ipcRenderer
 const shortid = window.require('shortid')
 
 const langEffectMappingTable = {
+  'brightness': 'settingPanel.add.effects.brightness',
+  'color': 'settingPanel.add.effects.color',
+  'contrast': 'settingPanel.add.effects.contrast',
+  'sharpness': 'settingPanel.add.effects.sharpness',
+  'factor': 'effects.arg.factor',
+
   'multiply' : 'settingPanel.add.effects.multiply',
   'soft_light': 'settingPanel.add.effects.soft_light',
   'opacity': 'effects.arg.opacity'
@@ -103,6 +109,10 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
 
   // effects select
   const effectTypes = useRef([
+    { name: 'brightness', value: 'brightness' },
+    { name: 'color', value: 'color' },
+    { name: 'contrast', value: 'contrast' },
+    { name: 'sharpness', value: 'sharpness' },
     { name: 'multiply', value: 'multiply' },
     { name: 'soft_light', value: 'soft_light' }
   ])

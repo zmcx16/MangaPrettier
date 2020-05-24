@@ -1,6 +1,10 @@
 const en = { 
   'settingPanel.add': `Add`,
   'settingPanel.add.effects': `Effects`,
+  'settingPanel.add.effects.brightness': `Brightness`,
+  'settingPanel.add.effects.color': `Color`,
+  'settingPanel.add.effects.contrast': `Contrast`,
+  'settingPanel.add.effects.sharpness': `Sharpness`,
   'settingPanel.add.effects.multiply': `Multiply`,
   'settingPanel.add.effects.soft_light': `Soft Light`,
   'settingPanel.ok': `OK`,
@@ -15,6 +19,7 @@ const en = {
   'settingPanel.message.taskStop': `Task Stopped!`,
   'settingPanel.message.missionComplete': `Mission Complete!`,
   'effects.arg.opacity': `Opacity`,
+  'effects.arg.factor': `Factor`,
   'filesPanel.folder': `Folder`,
   'filesPanel.image': `Image`,
   'previewImagePanel.scale': `Scale: `,

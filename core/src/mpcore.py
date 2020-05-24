@@ -11,8 +11,9 @@ import io
 import uuid
 import threading
 
+from image_enhance import ImageEnhance
 from blend import Blend
-from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
+from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
 
 
 class MangaPrettierCore(object):
@@ -49,14 +50,11 @@ class MangaPrettierCore(object):
 
                 image_src = param[CoreTaskKey.SOURCE]
                 image_o = Image.open(image_src)
+                h, w = image_o.size
                 image = np.array(image_o.convert('RGBA'))
-                h, w = image.shape[:2]
 
-                # self.logger.debug(image)
-                # self.logger.debug(image.shape)
-                image_org = Image.fromarray(image)
                 with io.BytesIO() as output:
-                    image_org.save(output, format='png')
+                    image_o.save(output, format='png')
                     img_org_arr = output.getvalue()
 
                 for config in param[CoreTaskKey.EFFECTS]:
@@ -268,7 +266,8 @@ class MangaPrettierCore(object):
             return {CoreTaskKey.RETURN: CoreReturn.EXCEPTION_ERROR, CoreTaskKey.EXCEPTION: e}
 
     ModeDict = {
-        CoreModeKey.BLEND: Blend
+        CoreModeKey.BLEND: Blend,
+        CoreModeKey.IMAGE_ENHANCE: ImageEnhance
     }
 
 

@@ -1,6 +1,10 @@
 const zh_TW = {
   'settingPanel.add': `新增`,
   'settingPanel.add.effects': `特效`,
+  'settingPanel.add.effects.brightness': `亮度增強`,
+  'settingPanel.add.effects.color': `色度增強`,
+  'settingPanel.add.effects.contrast': `對比增強`,
+  'settingPanel.add.effects.sharpness': `銳度增強`,
   'settingPanel.add.effects.multiply': `色彩增值`,
   'settingPanel.add.effects.soft_light': `柔光`,
   'settingPanel.ok': `確認`,
@@ -15,6 +19,7 @@ const zh_TW = {
   'settingPanel.message.taskStop': `工作已停止!`,
   'settingPanel.message.missionComplete': `任務完成!`,
   'effects.arg.opacity': `透明度`,
+  'effects.arg.factor': `效果因子`,
   'filesPanel.folder': `資料夾`,
   'filesPanel.image': `圖檔`,
   'previewImagePanel.scale': `縮放比: `,

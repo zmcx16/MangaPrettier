@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 from blend_modes import soft_light, multiply
 
-from coredef import CoreModeKey, BlendKey
+from core_def import CoreModeKey, BlendKey
 
 
 class Blend(object):

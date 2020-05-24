@@ -3,17 +3,26 @@ import sys
 import pathlib
 import logging
 import time
+import pytest
 from assertpy import assert_that
 
-from coredef import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlendKey
+from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlendKey, ImageEnhanceKey
 from mpcore import MangaPrettierCore
 
 
-def test_soft_light(logger, show=False):
+@pytest.mark.parametrize('mode, factor', [
+    ('brightness', .5),
+    ('brightness', 3),
+    ('color', .5),
+    ('color', 3),
+    ('contrast', .5),
+    ('contrast', 3),
+    ('sharpness', .5),
+    ('sharpness', 3)])
+def test_image_enhance(mode, factor, logger=logging.getLogger("MangaPrettierCore"), show=False):
 
     effects = [
-        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.SOFT_LIGHT, BlendKey.OPACITY: .8},
-        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.SOFT_LIGHT, BlendKey.OPACITY: .8}
+        {CoreTaskKey.TYPE: CoreModeKey.IMAGE_ENHANCE, CoreModeKey.MODE: mode, ImageEnhanceKey.FACTOR: factor}
     ]
 
     source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'Yu-Gi-Oh_01.png')
@@ -21,11 +30,13 @@ def test_soft_light(logger, show=False):
     do_preview_test(logger, effects, source, show)
 
 
-def test_multiply(logger, show=False):
+@pytest.mark.parametrize('mode, opacity',
+                         [('soft_light', .3),
+                          ('multiply', .7)])
+def test_blend(mode, opacity, logger=logging.getLogger("MangaPrettierCore"), show=False):
 
     effects = [
-        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.MULTIPLY, BlendKey.OPACITY: .8},
-        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: BlendKey.MULTIPLY, BlendKey.OPACITY: .8}
+        {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: mode, BlendKey.OPACITY: opacity}
     ]
 
     source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg')
@@ -78,5 +89,14 @@ if __name__ == "__main__":
     logger.addHandler(console_handler)
     logger.setLevel(logging.DEBUG)
 
-    # test_soft_light(logger, True)
-    # test_multiply(logger, True)
+    # test_image_enhance('brightness', .5, logger, True)
+    # test_image_enhance('brightness', 3, logger, True)
+    # test_image_enhance('color', .5, logger, True)
+    # test_image_enhance('color', 3, logger, True)
+    # test_image_enhance('contrast', .5, logger, True)
+    # test_image_enhance('contrast', 3, logger, True)
+    # test_image_enhance('sharpness', .5, logger, True)
+    # test_image_enhance('sharpness', 3, logger, True)
+    # test_blend('soft_light', .7, logger, True)
+    # test_blend('multiply', .9, logger, True)
+

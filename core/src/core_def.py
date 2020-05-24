@@ -8,7 +8,7 @@ class CoreReturn:
 class CoreModeKey:
     MODE = 'mode'
     BLEND = 'blend'
-
+    IMAGE_ENHANCE = 'image_enhance'
 
 class CoreTaskKey:
     RETURN = 'ret'
@@ -54,3 +54,14 @@ class BlendKey:
     # effect
     SOFT_LIGHT = 'soft_light'
     MULTIPLY = 'multiply'
+
+
+class ImageEnhanceKey:
+    # config
+    FACTOR = 'factor'
+
+    # effect
+    BRIGHTNESS = 'brightness'
+    COLOR = 'color'
+    CONTRAST = 'contrast'
+    SHARPNESS = 'sharpness'
