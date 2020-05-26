@@ -6,7 +6,7 @@ import time
 import pytest
 from assertpy import assert_that
 
-from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlendKey, ImageEnhanceKey
+from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, BlendKey, ImageEnhanceKey, LevelsKey
 from mpcore import MangaPrettierCore
 
 
@@ -40,6 +40,22 @@ def test_blend(mode, opacity, logger=logging.getLogger("MangaPrettierCore"), sho
     ]
 
     source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg')
+
+    do_preview_test(logger, effects, source, show)
+
+
+@pytest.mark.parametrize('mode, shadow, midtones, highlight, outshadow, outhighlight, channel',
+                         [('levels', 80, 1.0, 255, 0, 255, 'RGB'),
+                          ('levels', 30, 1.0, 240, 0, 255, 'R')])
+def test_levels(mode, shadow, midtones, highlight, outshadow, outhighlight, channel, logger=logging.getLogger("MangaPrettierCore"), show=False):
+
+    effects = [
+        {CoreTaskKey.TYPE: CoreModeKey.LEVELS, CoreModeKey.MODE: mode, LevelsKey.SHADOW: shadow,
+         LevelsKey.MIDTONES: midtones, LevelsKey.HIGHLIGHT: highlight, LevelsKey.OUTSHADOW: outshadow,
+         LevelsKey.OUTHIGHLIGHT: outhighlight, LevelsKey.CHANNEL: channel}
+    ]
+
+    source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_00.jpg')
 
     do_preview_test(logger, effects, source, show)
 
@@ -86,7 +102,7 @@ if __name__ == "__main__":
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.formatter = formatter
     logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+    # logger.addHandler(console_handler)
     logger.setLevel(logging.DEBUG)
 
     # test_image_enhance('brightness', .5, logger, True)
@@ -99,4 +115,5 @@ if __name__ == "__main__":
     # test_image_enhance('sharpness', 3, logger, True)
     # test_blend('soft_light', .7, logger, True)
     # test_blend('multiply', .9, logger, True)
+    test_levels('levels', 80, 1.0, 255, 0, 255, 'RGB', logger, False)
 

@@ -130,13 +130,13 @@ function createWindow() {
   }
 
   let config_default = {
-    heartbeat: 500,
+    heartbeat: 200,
     preview_timeout: 30000,
     lang: 'zh-TW'
   }
 
   try{
-    config = loadDataSync(CONFIG_FILE_NAME)
+    //config = loadDataSync(CONFIG_FILE_NAME)
     if (Object.keys(config).length === 0) {
       config = Object.assign({}, config_default)
       saveDataSync(CONFIG_FILE_NAME, config)

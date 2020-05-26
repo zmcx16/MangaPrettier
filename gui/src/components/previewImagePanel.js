@@ -82,8 +82,8 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
 
             if (resp['ret'] === 0) {
               setImageInfo({ width: resp['data']['img_info']['width'], height: resp['data']['img_info']['height'] })
-              setImageNode(<img src={`data:image/png;base64,${resp['data']['img']}`} alt='demo' style={{ width: '100%'}}/>)
-              setImageOrgNode(<img src={`data:image/png;base64,${resp['data']['img_org']}`} alt='demo' style={{ width: '100%'}} />)
+              setImageNode(<img src={`data:image/jpeg;base64,${resp['data']['img']}`} alt='demo' style={{ width: '100%'}}/>)
+              setImageOrgNode(<img src={`data:image/jpeg;base64,${resp['data']['img_org']}`} alt='demo' style={{ width: '100%'}} />)
               resolve(resp['ret'])
 
             } else if (resp['ret'] === 1) {

@@ -9,6 +9,7 @@ class CoreModeKey:
     MODE = 'mode'
     BLEND = 'blend'
     IMAGE_ENHANCE = 'image_enhance'
+    LEVELS = 'levels'
 
 class CoreTaskKey:
     RETURN = 'ret'
@@ -65,3 +66,22 @@ class ImageEnhanceKey:
     COLOR = 'color'
     CONTRAST = 'contrast'
     SHARPNESS = 'sharpness'
+
+
+class LevelsKey:
+    # config
+    SHADOW = 'Shadow'
+    MIDTONES = 'Midtones'
+    HIGHLIGHT = 'Highlight'
+    OUTSHADOW = 'OutShadow'
+    OUTHIGHLIGHT = 'OutHighlight'
+    CHANNEL = 'Channel'
+
+    # config value
+    CHANNEL_R = 'R'
+    CHANNEL_G = 'G'
+    CHANNEL_B = 'B'
+    CHANNEL_RGB = 'RGB'
+
+    # effect
+    LEVELS = 'levels'

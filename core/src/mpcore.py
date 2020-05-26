@@ -13,6 +13,7 @@ import threading
 
 from image_enhance import ImageEnhance
 from blend import Blend
+from levels import Levels
 from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
 
 
@@ -54,7 +55,7 @@ class MangaPrettierCore(object):
                 image = np.array(image_o.convert('RGBA'))
 
                 with io.BytesIO() as output:
-                    image_o.save(output, format='png')
+                    image_o.convert('RGB').save(output, format='JPEG', quality=100)
                     img_org_arr = output.getvalue()
 
                 for config in param[CoreTaskKey.EFFECTS]:
@@ -63,7 +64,7 @@ class MangaPrettierCore(object):
 
                 image = Image.fromarray(image)
                 with io.BytesIO() as output:
-                    image.save(output, format='png')
+                    image.convert('RGB').save(output, format='JPEG', quality=100)
                     img_arr = output.getvalue()
 
                 # print(base64.encodebytes(img_arr).decode('ascii'))
@@ -267,7 +268,8 @@ class MangaPrettierCore(object):
 
     ModeDict = {
         CoreModeKey.BLEND: Blend,
-        CoreModeKey.IMAGE_ENHANCE: ImageEnhance
+        CoreModeKey.IMAGE_ENHANCE: ImageEnhance,
+        CoreModeKey.LEVELS: Levels
     }
 
 
