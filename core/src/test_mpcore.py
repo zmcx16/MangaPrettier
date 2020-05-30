@@ -19,13 +19,15 @@ from mpcore import MangaPrettierCore
     ('contrast', 3),
     ('sharpness', .5),
     ('sharpness', 3)])
-def test_image_enhance(mode, factor, logger=logging.getLogger("MangaPrettierCore"), show=False):
+def test_image_enhance(mode, factor, logger=logging.getLogger("MangaPrettierCore"), show=False, image_path="./core/test-sample"):
 
     effects = [
         {CoreTaskKey.TYPE: CoreModeKey.IMAGE_ENHANCE, CoreModeKey.MODE: mode, ImageEnhanceKey.FACTOR: factor}
     ]
 
     source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'Yu-Gi-Oh_01.png')
+    if not os.path.exists(source):
+        source = os.path.join(image_path, 'Yu-Gi-Oh_01.png')
 
     do_preview_test(logger, effects, source, show)
 
@@ -33,13 +35,15 @@ def test_image_enhance(mode, factor, logger=logging.getLogger("MangaPrettierCore
 @pytest.mark.parametrize('mode, opacity',
                          [('soft_light', .3),
                           ('multiply', .7)])
-def test_blend(mode, opacity, logger=logging.getLogger("MangaPrettierCore"), show=False):
+def test_blend(mode, opacity, logger=logging.getLogger("MangaPrettierCore"), show=False, image_path="./core/test-sample"):
 
     effects = [
         {CoreTaskKey.TYPE: CoreModeKey.BLEND, CoreModeKey.MODE: mode, BlendKey.OPACITY: opacity}
     ]
 
     source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_02.jpg')
+    if not os.path.exists(source):
+        source = os.path.join(image_path, 'MachikadoMazoku_02.jpg')
 
     do_preview_test(logger, effects, source, show)
 
@@ -47,7 +51,7 @@ def test_blend(mode, opacity, logger=logging.getLogger("MangaPrettierCore"), sho
 @pytest.mark.parametrize('mode, shadow, midtones, highlight, outshadow, outhighlight, channel',
                          [('levels', 80, 1.0, 255, 0, 255, 'RGB'),
                           ('levels', 30, 1.0, 240, 0, 255, 'R')])
-def test_levels(mode, shadow, midtones, highlight, outshadow, outhighlight, channel, logger=logging.getLogger("MangaPrettierCore"), show=False):
+def test_levels(mode, shadow, midtones, highlight, outshadow, outhighlight, channel, logger=logging.getLogger("MangaPrettierCore"), show=False, image_path="./core/test-sample"):
 
     effects = [
         {CoreTaskKey.TYPE: CoreModeKey.LEVELS, CoreModeKey.MODE: mode, LevelsKey.SHADOW: shadow,
@@ -56,6 +60,8 @@ def test_levels(mode, shadow, midtones, highlight, outshadow, outhighlight, chan
     ]
 
     source = os.path.join(pathlib.Path().absolute(), '..', 'test-sample', 'MachikadoMazoku_00.jpg')
+    if not os.path.exists(source):
+        source = os.path.join(image_path, 'MachikadoMazoku_00.jpg')
 
     do_preview_test(logger, effects, source, show)
 
