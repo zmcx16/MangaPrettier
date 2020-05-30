@@ -6,7 +6,7 @@
   "description": "MangaPrettier",
   "author": "zmcx16 <zmcx16@gmail.com>",
   "devDependencies": {
-    "foreman": "^2.0.0",
+    "foreman": "^3.0.1",
     "react-scripts": "3.4.1",
     "electron": "^5.0.1",
     "electron-builder": "^20.39.0",
