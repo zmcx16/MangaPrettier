@@ -114,7 +114,7 @@ class MangaPrettierCore(object):
                         image = mode.run(image, config, False).copy()
 
                     image = Image.fromarray(image)
-                    image.save(output_path, format='png')
+                    image.save(os.path.splitext(output_path)[0]+'.png', format='png')
 
                     # --------------------
 

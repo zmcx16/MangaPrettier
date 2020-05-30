@@ -1,0 +1,11 @@
+language: python
+dist: xenial
+python:
+    - "3.6"
+install:
+    - pip install -r requirements.txt
+script:
+    - pytest
+notifications:
+    email:
+        - zmcx16@gmail.com
