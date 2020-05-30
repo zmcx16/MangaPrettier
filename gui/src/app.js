@@ -96,6 +96,9 @@ function App() {
     setEnableEffect: (val) => {
       previewImagePanelRef.current.setEnableEffect(val)
     },
+    getImageData: () => {
+      return previewImagePanelRef.current.getImageData()
+    },
     renderImageNode: (args) => {
       previewImagePanelRef.current.renderImageNode(args)
     }

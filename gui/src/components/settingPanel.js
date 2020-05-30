@@ -26,15 +26,30 @@ const ipc = electron.ipcRenderer
 const shortid = window.require('shortid')
 
 const langEffectMappingTable = {
-  'brightness': 'settingPanel.add.effects.brightness',
-  'color': 'settingPanel.add.effects.color',
-  'contrast': 'settingPanel.add.effects.contrast',
-  'sharpness': 'settingPanel.add.effects.sharpness',
+  'brightness': 'effects.arg.brightness',
+  'color': 'effects.arg.color',
+  'contrast': 'effects.arg.contrast',
+  'sharpness': 'effects.arg.sharpness',
   'factor': 'effects.arg.factor',
+  'shadow': 'effects.arg.shadow',
+  'midtones': 'effects.arg.midtones',
+  'highlight': 'effects.arg.highlight',
+  'outshadow': 'effects.arg.outshadow',
+  'outhighlight': 'effects.arg.outhighlight',
+  'channel': 'effects.arg.channel',
+  'multiply': 'effects.arg.multiply',
+  'soft_light': 'effects.arg.soft_light',
+  'opacity': 'effects.arg.opacity',
+  'RGB': 'effects.arg.channel.RGB',
+  'R': 'effects.arg.channel.R',
+  'G': 'effects.arg.channel.G',
+  'B': 'effects.arg.channel.B',
 
-  'multiply' : 'settingPanel.add.effects.multiply',
-  'soft_light': 'settingPanel.add.effects.soft_light',
-  'opacity': 'effects.arg.opacity'
+  'levels': 'settingPanel.add.effects.levels',
+  'blend': 'settingPanel.add.effects.blend',
+  'image_enhance': 'settingPanel.add.effects.image_enhance',
+
+  'mode': 'effects.arg.mode',
 }
 
 function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePanelAPI, client, config}) {
@@ -46,11 +61,23 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   }
   const transEffectText = (effect_val)=>{
     let displayText = ''
+
     for (const [key, value] of Object.entries(effect_val)) {
-      if (key !== 'mode' && key !== 'type') {
-        displayText += getEffectMappingLangID(key) + ': ' + value + '; '
+      
+      // for key
+      if (key === 'type') { // do nothing
+
+      } else if (key === 'mode') {
+
+        displayText += getEffectMappingLangID(key) + ': ' + getEffectMappingLangID(value) + '; '
+      } else {
+
+        typeof value === 'string' ? 
+          displayText += getEffectMappingLangID(key) + ': ' + getEffectMappingLangID(value) + '; ' :
+          displayText += getEffectMappingLangID(key) + ': ' + value + '; '
       }
     }
+
     return displayText
   }
 
@@ -109,12 +136,9 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
 
   // effects select
   const effectTypes = useRef([
-    { name: 'brightness', value: 'brightness' },
-    { name: 'color', value: 'color' },
-    { name: 'contrast', value: 'contrast' },
-    { name: 'sharpness', value: 'sharpness' },
-    { name: 'multiply', value: 'multiply' },
-    { name: 'soft_light', value: 'soft_light' }
+    { name: 'levels', value: 'levels' },
+    { name: 'blend', value: 'blend' },
+    { name: 'image_enhance', value: 'image_enhance' }
   ])
 
   const [effectSelect, setEffectSelect] = useState({
@@ -122,7 +146,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
     effectType: effectTypes.current[0].value
   });
 
-  const renderEffectArgsNode = (effectType) => { return <EffectArgs effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} />}
+  const renderEffectArgsNode = (effectType) => { return <EffectArgs effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} appAPI={appAPI}/>}
   const [effectArgsNode, setEffectArgsNode] = useState(renderEffectArgsNode(effectTypes.current[0].value))
 
   const effectSelectChange = (event) => {
@@ -393,7 +417,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
               <Button variant="contained" color="primary" className={settingPanelStyle.button} onClick={() => { 
                 
                 console.log(argsRef.current)
-                let displayName = argsRef.current.mode
+                let displayName = argsRef.current.type
                 argsList.current.push({ name: displayName, value: argsRef.current })
                 setArgsListNodes(renderArgsList())
                 addWindowClose()

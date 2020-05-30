@@ -1,0 +1,14 @@
+.root{
+  margin: 30px;
+}
+
+.channelSelect{
+  min-width: 100px;
+}
+
+.argNode{
+  display: grid;
+  grid-template-columns: 120px 230px;
+  justify-items: left;
+  align-items: center;
+}

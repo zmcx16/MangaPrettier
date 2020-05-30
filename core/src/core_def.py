@@ -70,12 +70,12 @@ class ImageEnhanceKey:
 
 class LevelsKey:
     # config
-    SHADOW = 'Shadow'
-    MIDTONES = 'Midtones'
-    HIGHLIGHT = 'Highlight'
-    OUTSHADOW = 'OutShadow'
-    OUTHIGHLIGHT = 'OutHighlight'
-    CHANNEL = 'Channel'
+    SHADOW = 'shadow'
+    MIDTONES = 'midtones'
+    HIGHLIGHT = 'highlight'
+    OUTSHADOW = 'outshadow'
+    OUTHIGHLIGHT = 'outhighlight'
+    CHANNEL = 'channel'
 
     # config value
     CHANNEL_R = 'R'

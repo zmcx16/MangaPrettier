@@ -15,13 +15,16 @@ import previewImagePanelStyle from "./previewImagePanel.module.scss"
 
 function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
   
+  const PREVIEW_IMAGE_FORMAT = 'data:image/jpeg;base64,'
+
   // lang
   const intl = useIntl()
 
   const toolBarRef = useRef(null)
   const [enableEffect, setEnableEffect] = useState(true)
-  const [imageNode, setImageNode] = useState()
-  const [imageOrgNode, setImageOrgNode] = useState()
+  const [imageNode, setImageNode] = useState('')
+  const imageNodeRef = useRef(null)
+  const [imageOrgNode, setImageOrgNode] = useState('')
   const [imageScale, setImageScale] = useState(1.0)
   const [imageInfo, setImageInfo] = useState({width: 100, height: 100})
 
@@ -34,6 +37,13 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
 
   previewImagePanelRef.current.setEnableEffect = (val) =>{
     setEnableEffect(val)
+  }
+
+  previewImagePanelRef.current.getImageData = () => {
+    return { 
+      imageNode: imageNode === '' ? '' : `${PREVIEW_IMAGE_FORMAT}${imageNode}`,
+      imageOrgNode: imageOrgNode === '' ? '' : `${PREVIEW_IMAGE_FORMAT}${imageOrgNode}`
+    }
   }
 
   previewImagePanelRef.current.renderImageNode = (args) => {
@@ -82,8 +92,8 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
 
             if (resp['ret'] === 0) {
               setImageInfo({ width: resp['data']['img_info']['width'], height: resp['data']['img_info']['height'] })
-              setImageNode(<img src={`data:image/jpeg;base64,${resp['data']['img']}`} alt='demo' style={{ width: '100%'}}/>)
-              setImageOrgNode(<img src={`data:image/jpeg;base64,${resp['data']['img_org']}`} alt='demo' style={{ width: '100%'}} />)
+              setImageNode(resp['data']['img'])
+              setImageOrgNode(resp['data']['img_org'])
               resolve(resp['ret'])
 
             } else if (resp['ret'] === 1) {
@@ -186,8 +196,8 @@ function PreviewImagePanel({ previewImagePanelRef, appAPI, client, config }) {
         <div className={previewImagePanelStyle.imageNode} style={{ maxWidth: toolBarRef.current === null ? 2000 : toolBarRef.current.clientWidth-2 /* diff error */}}>
           <ScrollContainer className="scroll-container" hideScrollbars={false} style={{height: '100%'}}>
             <div style={{ width: `${imageScale * imageInfo.width}px`, height: `${imageScale * imageInfo.height}px`   }}>
-              <div style={{ display: enableEffect ? 'block' : 'none' }}>{ imageNode }</div>
-              <div style={{ display: enableEffect ? 'none' : 'block' }}>{ imageOrgNode }</div>
+              <div style={{ display: enableEffect && imageNode !== '' ? 'block' : 'none' }}><img ref={imageNodeRef} src={`${PREVIEW_IMAGE_FORMAT}${imageNode}`} alt='demo' style={{ width: '100%'}}/></div>
+              <div style={{ display: enableEffect || imageOrgNode === '' ? 'none' : 'block' }}><img src={`${PREVIEW_IMAGE_FORMAT}${imageOrgNode}`} alt='demo' style={{ width: '100%' }} /></div>
             </div>
           </ScrollContainer>
         </div>

@@ -51,7 +51,7 @@ class MangaPrettierCore(object):
 
                 image_src = param[CoreTaskKey.SOURCE]
                 image_o = Image.open(image_src)
-                h, w = image_o.size
+                w, h = image_o.size
                 image = np.array(image_o.convert('RGBA'))
 
                 with io.BytesIO() as output:
@@ -60,7 +60,7 @@ class MangaPrettierCore(object):
 
                 for config in param[CoreTaskKey.EFFECTS]:
                     mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
-                    image = mode.run(image, config, param[CoreTaskKey.SHOW])
+                    image = mode.run(image, config, param[CoreTaskKey.SHOW]).copy()
 
                 image = Image.fromarray(image)
                 with io.BytesIO() as output:
@@ -111,7 +111,7 @@ class MangaPrettierCore(object):
 
                     for config in effects:
                         mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
-                        image = mode.run(image, config, False)
+                        image = mode.run(image, config, False).copy()
 
                     image = Image.fromarray(image)
                     image.save(output_path, format='png')

@@ -115,5 +115,5 @@ if __name__ == "__main__":
     # test_image_enhance('sharpness', 3, logger, True)
     # test_blend('soft_light', .7, logger, True)
     # test_blend('multiply', .9, logger, True)
-    test_levels('levels', 80, 1.0, 255, 0, 255, 'RGB', logger, False)
+    test_levels('levels', 0, 1, 255, 0, 255, 'RGB', logger, True)
 

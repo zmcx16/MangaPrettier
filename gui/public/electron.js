@@ -136,7 +136,7 @@ function createWindow() {
   }
 
   try{
-    //config = loadDataSync(CONFIG_FILE_NAME)
+    config = loadDataSync(CONFIG_FILE_NAME)
     if (Object.keys(config).length === 0) {
       config = Object.assign({}, config_default)
       saveDataSync(CONFIG_FILE_NAME, config)
@@ -162,7 +162,7 @@ function createWindow() {
   } catch(e){
     console.log('load config failed, ex = ' + e.toString())
     config = Object.assign({}, config_default)
-    //saveDataSync(CONFIG_FILE_NAME, config)
+    saveDataSync(CONFIG_FILE_NAME, config)
   }
 
   console.log(config)
@@ -172,19 +172,19 @@ function createWindow() {
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-      width: 1024, 
-      height: 600,
-      icon: path.join(__dirname, 'MangaPrettier.png'),
-      webPreferences: {
-          nodeIntegration: true
-      }
+    width: 960, height: 540,
+    minWidth: 860, minHeight: 500,
+    icon: path.join(__dirname, 'MangaPrettier.png'),
+    webPreferences: {
+        nodeIntegration: true
+    }
   })
 
   // and load the index.html of the app.
   mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`)
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

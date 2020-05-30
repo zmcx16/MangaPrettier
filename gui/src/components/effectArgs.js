@@ -1,13 +1,16 @@
 import React, { useState, useCallback } from 'react'
 
+import Levels from './effects/levels'
 import ImageEnhance from './effects/imageEnhance'
 import Blend from './effects/blend'
 
-function EffectArgs({ renderEffectArgsFunc, effectType, settingPanelRef, filesPanelAPI, previewImagePanelAPI }) {
+function EffectArgs({ effectType, settingPanelRef, filesPanelAPI, previewImagePanelAPI, appAPI }) {
 
-  return ((effectType === 'multiply' || effectType === 'soft_light') ? 
+  return ((effectType === 'levels') ?
+    <Levels effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} appAPI={appAPI} /> : 
+    (effectType === 'blend') ? 
     <Blend effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} /> : 
-    (effectType === 'brightness' || effectType === 'color' || effectType === 'contrast' || effectType === 'sharpness') ? 
+    (effectType === 'image_enhance') ? 
     <ImageEnhance effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} /> :
     <></>)
 }

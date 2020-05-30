@@ -10,7 +10,6 @@ export function sendCmdToCore(client, msg, callback) {
   })
 }
 
-
 // ios switch 
 export const IOSSwitch = withStyles((theme) => ({
   root: {
