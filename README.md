@@ -3,7 +3,7 @@
 ![Travis-CI Badge](https://travis-ci.org/zmcx16/MangaPrettier.svg?branch=master)  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/89de3de3b92c4b31aaea413754a32894)](https://app.codacy.com/manual/zmcx16/MangaPrettier?utm_source=github.com&utm_medium=referral&utm_content=zmcx16/MangaPrettier&utm_campaign=Badge_Grade_Dashboard)
 
 
-# Make old / low contrast / low brightness Manga image to pretty 
+# Make old / low contrast / low brightness Manga image to clear 
 Image processing is hard, and the photoshop may difficult to common users, the MangaPrettier supply some simple process image features and easy use for manga image batch processing.
 
 # Features
