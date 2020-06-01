@@ -34,6 +34,7 @@ var config = {}
 // be closed automatically when the JavaScript object is garbage collected.
 var mainWindow
 var aboutWindow
+var settingWindow
 
 
 // log setting
@@ -47,6 +48,27 @@ function genMenuTemplate(lang){
   return [{
     label: lang === 'zh-TW' ? '選單' : 'Menu',
     submenu: [
+      {
+        label: lang === 'zh-TW' ? '設置' : 'Setting',
+        click: () => {
+          if (!settingWindow) {
+            console.log('open setting Window')
+            settingWindow = new BrowserWindow({
+              icon: path.join(__dirname, 'MangaPrettier.png'),
+              webPreferences: {
+                nodeIntegration: true
+              },
+              width: 640, height: 320
+            })
+
+            settingWindow.loadURL(isDev ? 'http://localhost:3000?page=setting' : `file://${path.join(__dirname, '../build/index.html?page=setting')}`)
+            settingWindow.on('closed', () => {
+              settingWindow = null
+            })
+            settingWindow.removeMenu()
+          }
+        }
+      },
       {
         label: lang === 'zh-TW' ? '語系' : 'Language',
         submenu: [

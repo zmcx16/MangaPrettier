@@ -1,8 +1,7 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import App from './app';
-import './index.css';
+import App from './app'
 
 const path = window.require('path')
 const log = window.require('electron-log')
@@ -21,7 +20,12 @@ console.error = log.error
 
 console.log('render process start')
 
+let href = ''
+if (typeof window !== 'undefined') {
+  href = window.location.href
+}
+
 ReactDOM.render(
-  <App />,
+  href.indexOf('?page=setting') !== -1 ? <div>setting page</div> : <App />,
   document.getElementById('root')
 )
