@@ -39,6 +39,7 @@ const zh_TW = {
   'filesPanel.image': `圖檔`,
   'previewImagePanel.scale': `縮放比: `,
   'previewImagePanel.enableEffect': `顯示特效`,
+  'setting.output.format': '輸出格式'
 }
 
 export default zh_TW;

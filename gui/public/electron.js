@@ -66,6 +66,9 @@ function genMenuTemplate(lang){
               settingWindow = null
             })
             settingWindow.removeMenu()
+
+            // Debug
+            settingWindow.webContents.openDevTools()
           }
         }
       },

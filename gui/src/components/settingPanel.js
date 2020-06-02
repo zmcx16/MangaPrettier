@@ -144,7 +144,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   const [effectSelect, setEffectSelect] = useState({
     name: 'effect',
     effectType: effectTypes.current[0].value
-  });
+  })
 
   const renderEffectArgsNode = (effectType) => { return <EffectArgs effectType={effectType} settingPanelRef={settingPanelRef} filesPanelAPI={filesPanelAPI} previewImagePanelAPI={previewImagePanelAPI} appAPI={appAPI}/>}
   const [effectArgsNode, setEffectArgsNode] = useState(renderEffectArgsNode(effectTypes.current[0].value))
@@ -154,10 +154,10 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
     setEffectSelect({
       ...effectSelect,
       [name]: event.target.value,
-    });
+    })
 
     setEffectArgsNode(renderEffectArgsNode(event.target.value))
-  };
+  }
 
   const argsRef = useRef({}) 
 

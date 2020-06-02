@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 import App from './app'
+import Setting from './setting'
 
 const path = window.require('path')
 const log = window.require('electron-log')
@@ -26,6 +27,6 @@ if (typeof window !== 'undefined') {
 }
 
 ReactDOM.render(
-  href.indexOf('?page=setting') !== -1 ? <div>setting page</div> : <App />,
+  href.indexOf('?page=setting') !== -1 ? <Setting /> : <App />,
   document.getElementById('root')
 )

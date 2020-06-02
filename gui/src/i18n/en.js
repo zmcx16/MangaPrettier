@@ -39,6 +39,7 @@ const en = {
   'filesPanel.image': `Image`,
   'previewImagePanel.scale': `Scale: `,
   'previewImagePanel.enableEffect': `Enable Effect`,
+  'setting.output.format': 'Output Format'
 }
 
 export default en;
