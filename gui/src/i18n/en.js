@@ -39,7 +39,11 @@ const en = {
   'filesPanel.image': `Image`,
   'previewImagePanel.scale': `Scale: `,
   'previewImagePanel.enableEffect': `Enable Effect`,
-  'setting.output.format': 'Output Format'
+  'setting.output.format': 'Output Format',
+  'setting.output.jpeg.quality': 'Quality',
+  'setting.output.jpeg.optimize': 'Optimize',
+  'setting.output.png.compress_level': 'Compress Level',
+  'setting.output.png.optimize': 'Optimize'
 }
 
 export default en;

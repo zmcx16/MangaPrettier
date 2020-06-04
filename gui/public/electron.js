@@ -157,7 +157,9 @@ function createWindow() {
   let config_default = {
     heartbeat: 200,
     preview_timeout: 30000,
-    lang: 'zh-TW'
+    lang: 'zh-TW',
+    output: { format: 'JPEG', quality: 75, optimize: true },
+    port: 7777
   }
 
   try{
@@ -177,6 +179,14 @@ function createWindow() {
       }
       if (!('lang' in config)){
         config['lang'] = config_default['lang']
+        isUpdate = true
+      }
+      if (!('output' in config)){
+        config['output'] = config_default['output']
+        isUpdate = true
+      }
+      if (!('port' in config)){
+        config['port'] = config_default['port']
         isUpdate = true
       }
 
@@ -220,7 +230,7 @@ function createWindow() {
   })
 
   // for core process
-  let port_candidate = 7777
+  let port_candidate = config['port']
   detect_port(port_candidate, (err, _port) => {
     if (err) {
       console.log(err)

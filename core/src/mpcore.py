@@ -113,8 +113,9 @@ class MangaPrettierCore(object):
                         mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
                         image = mode.run(image, config, False).copy()
 
-                    image = Image.fromarray(image)
-                    image.save(os.path.splitext(output_path)[0]+'.png', format='png')
+                    image = Image.fromarray(image).convert('RGB')
+                    #image.save(os.path.splitext(output_path)[0]+'.png', format='png')
+                    image.save(os.path.splitext(output_path)[0] + '.jpg', format='jpeg', quality=95, optimize=True)
 
                     # --------------------
 

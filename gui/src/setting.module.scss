@@ -33,6 +33,22 @@ $backgroud-color: floralwhite;
 }
 
 .outputArgs{
-  border: 1px solid black;
-  margin: 20px auto;
+  margin: 20px;
+}
+
+.advBlock{
+  text-align: left;
+  margin: 20px;
+}
+
+.settingButtons{
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-items: normal;
+  align-items: center;
+  margin: 20px;
+}
+
+.button{
+  min-width: 80px;
 }
