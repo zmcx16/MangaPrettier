@@ -57,6 +57,21 @@ function Setting() {
     setOutputArgsNode(renderOutputArgsNode(event.target.value))
   }
 
+
+  const renderAdvConfigNode = () => {
+    return (
+      <div className={settingStyle.advBlock}>
+        <TextField id="heartbeat-basic" defaultValue={configRef.current['heartbeat']} label="heartbeat" variant="outlined" onChange={(event) => {
+          configRef.current['heartbeat'] = event.target.value
+        }} />
+        <TextField id="preview_timeout-basic" defaultValue={configRef.current['preview_timeout']} label="preview_timeout" variant="outlined" onChange={(event)=>{
+          configRef.current['preview_timeout'] = event.target.value
+        }} />
+      </div>
+    )
+  }
+  const [advConfigNode, setAdvConfigNode] = useState()
+
   useEffect(() => {
     // componentDidMount is here!
     // componentDidUpdate is here!
@@ -77,6 +92,7 @@ function Setting() {
       configRef.current = config
       setLocale(configRef.current['lang'])
       setOutputArgsNode(renderOutputArgsNode(configRef.current['output']['format']))
+      setAdvConfigNode(renderAdvConfigNode())
     })
 
     ipc.send('getConfig')
@@ -122,9 +138,7 @@ function Setting() {
             </div>
             <div className={settingStyle.container}>
               <h1 className={settingStyle.containerTitle}><span className={settingStyle.containerTitleSpan}>&nbsp;Advanced&nbsp;</span></h1>
-              <div className={settingStyle.advBlock}>
-                <TextField id="outlined-basic" label="Outlined" variant="outlined" inputRef={(v) => { }}/>
-              </div>
+              {advConfigNode}
             </div>
           </div>
           <div className={settingStyle.settingButtons}>

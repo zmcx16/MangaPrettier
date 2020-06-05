@@ -43,7 +43,9 @@ const en = {
   'setting.output.jpeg.quality': 'Quality',
   'setting.output.jpeg.optimize': 'Optimize',
   'setting.output.png.compress_level': 'Compress Level',
-  'setting.output.png.optimize': 'Optimize'
+  'setting.output.png.optimize': 'Optimize',
+  'setting.adv.heartbeat': 'Update Delay',
+  'setting.adv.preview_timeout': 'Preview Timout'
 }
 
 export default en;

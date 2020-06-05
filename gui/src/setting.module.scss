@@ -39,6 +39,11 @@ $backgroud-color: floralwhite;
 .advBlock{
   text-align: left;
   margin: 20px;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-items: normal;
+  align-items: center;
+  gap: 40px;
 }
 
 .settingButtons{

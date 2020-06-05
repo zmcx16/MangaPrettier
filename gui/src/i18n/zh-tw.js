@@ -43,7 +43,9 @@ const zh_TW = {
   'setting.output.jpeg.quality': '品質',
   'setting.output.jpeg.optimize': '最佳化',
   'setting.output.png.compress_level': '壓縮等級',
-  'setting.output.png.optimize': '最佳化'
+  'setting.output.png.optimize': '最佳化',
+  'setting.adv.heartbeat': '更新延遲',
+  'setting.adv.preview_timeout': '預覽超時'
 }
 
 export default zh_TW;
