@@ -39,13 +39,19 @@ const en = {
   'filesPanel.image': `Image`,
   'previewImagePanel.scale': `Scale: `,
   'previewImagePanel.enableEffect': `Enable Effect`,
+  'setting.output': 'Output',
   'setting.output.format': 'Output Format',
   'setting.output.jpeg.quality': 'Quality',
   'setting.output.jpeg.optimize': 'Optimize',
   'setting.output.png.compress_level': 'Compress Level',
   'setting.output.png.optimize': 'Optimize',
+  'setting.adv': 'Advanced',
   'setting.adv.heartbeat': 'Update Delay',
-  'setting.adv.preview_timeout': 'Preview Timout'
+  'setting.adv.preview_timeout': 'Preview Timout',
+  'setting.adv.heartbeat.error': 'Update Delay must be a positive number and greater than 100 (ms)',
+  'setting.adv.preview_timeout.error': 'Preview Timout must be a positive number and greater than 30000 (ms)',
+  'setting.save.success': 'Save setting success, please restart MangaPrettier to use updated setting.',
+  'setting.save.failed': 'Save setting failed.'
 }
 
 export default en;

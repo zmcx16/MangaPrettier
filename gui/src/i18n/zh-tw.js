@@ -39,13 +39,19 @@ const zh_TW = {
   'filesPanel.image': `圖檔`,
   'previewImagePanel.scale': `縮放比: `,
   'previewImagePanel.enableEffect': `顯示特效`,
+  'setting.output': '輸出設定',
   'setting.output.format': '輸出格式',
   'setting.output.jpeg.quality': '品質',
   'setting.output.jpeg.optimize': '最佳化',
   'setting.output.png.compress_level': '壓縮等級',
   'setting.output.png.optimize': '最佳化',
+  'setting.adv': '進階設定',
   'setting.adv.heartbeat': '更新延遲',
-  'setting.adv.preview_timeout': '預覽超時'
+  'setting.adv.preview_timeout': '預覽超時',
+  'setting.adv.heartbeat.error': '更新延遲參數必須是正整數且大於100毫秒',
+  'setting.adv.preview_timeout.error': '預覽超時參數必須是正整數且大於30000毫秒',
+  'setting.save.success': '儲存設定成功, 請重啟MangaPrettier套用新的設定。',
+  'setting.save.failed': '儲存設定失敗。'
 }
 
 export default zh_TW;

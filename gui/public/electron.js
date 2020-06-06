@@ -58,7 +58,8 @@ function genMenuTemplate(lang){
               webPreferences: {
                 nodeIntegration: true
               },
-              width: 640, height: 320
+              resizable: false,
+              width: 512, height: 512
             })
 
             settingWindow.loadURL(isDev ? 'http://localhost:3000?page=setting' : `file://${path.join(__dirname, '../build/index.html?page=setting')}`)
@@ -68,7 +69,7 @@ function genMenuTemplate(lang){
             settingWindow.removeMenu()
 
             // Debug
-            settingWindow.webContents.openDevTools()
+            //settingWindow.webContents.openDevTools()
           }
         }
       },
@@ -105,6 +106,7 @@ function genMenuTemplate(lang){
               webPreferences: {
               nodeIntegration: true
               },
+              resizable: false,
               width: 640, height: 320
             })
 
@@ -337,6 +339,7 @@ function type_check(file_path, filter){
 function saveDataSync(file_name, target_data){
   console.log('save ' + file_name)
   fs.writeFileSync(path.join(user_data_path, file_name), JSON.stringify(target_data), 'utf8')
+  return true
 }
 
 function loadDataSync(file_name) {
@@ -368,6 +371,9 @@ ipc.on('getConfig', (event) => {
   event.sender.send('getConfig_callback', config)
 })
 
+ipc.on('getConfigSync', (event) => {
+  event.returnValue = config
+})
 
 ipc.on('getImagesInfo', (event, isFolder) => {
 
@@ -470,4 +476,9 @@ ipc.on('exportEffects', (event, data) => {
 
   event.returnValue = {ret: 0}
 
+})
+
+ipc.on('saveConfig', (event, data) => {
+  let ret = saveDataSync(CONFIG_FILE_NAME, data)
+  event.returnValue = ret
 })

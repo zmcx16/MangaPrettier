@@ -3,6 +3,9 @@ import InputLabel from '@material-ui/core/InputLabel'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
 import Button from '@material-ui/core/Button'
+import Modal from '@material-ui/core/Modal'
+import Backdrop from '@material-ui/core/Backdrop'
+import Fade from '@material-ui/core/Fade'
 import TextField from '@material-ui/core/TextField'
 import { blue, lightBlue } from '@material-ui/core/colors'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
@@ -20,14 +23,33 @@ import settingStyle from './setting.module.scss'
 
 const electron = window.require('electron')
 const ipc = electron.ipcRenderer
+const remote = electron.remote
 const shortid = window.require('shortid')
 
 function Setting() {
 
-  const [locale, setLocale] = useState('zh-TW')
+  const HEART_BEAT_MIN = 100
+  const PREVIEW_TIMEOUT_MIN = 30000
+
+  var config = ipc.sendSync('getConfigSync')
+  console.log('config: ' + JSON.stringify(config))
+
+  const configRef = useRef(config)
+
+  const [locale, setLocale] = useState(configRef.current['lang'])
   const [use_lang, l10n_messages] = locale === 'zh-TW' ? ['zh-TW', zh_tw] : ['en', en]
 
-  const configRef = useRef({})
+  const [openModal, setOpenModal] = useState(false)
+  const [modalNode, setModalNode] = useState(<div></div>)
+
+  const popModalWindow = (content) => {
+    setModalNode(
+      <div className={settingStyle.modalWindow}>
+        {content}
+      </div>
+    )
+    setOpenModal(true)
+  }
 
   const outputTypes = useRef([
     { name: 'JPEG', value: 'JPEG' },
@@ -37,7 +59,7 @@ function Setting() {
 
   const [outputSelect, setOutputSelect] = useState({
     name: 'output',
-    outputType: outputTypes.current[0].value
+    outputType: configRef.current['output']['format']
   })
 
   const renderOutputArgsNode = (outputType) => { 
@@ -45,7 +67,7 @@ function Setting() {
         outputType === 'PNG' ? <PNG configRef={configRef} /> : 
         outputType === 'BMP' ? <BMP configRef={configRef} /> : <></>
   }
-  const [outputArgsNode, setOutputArgsNode] = useState()
+  const [outputArgsNode, setOutputArgsNode] = useState(renderOutputArgsNode(configRef.current['output']['format']))
 
   const outputSelectChange = (event) => {
     const name = event.target.name;
@@ -61,48 +83,16 @@ function Setting() {
   const renderAdvConfigNode = () => {
     return (
       <div className={settingStyle.advBlock}>
-        <TextField id="heartbeat-basic" defaultValue={configRef.current['heartbeat']} label="heartbeat" variant="outlined" onChange={(event) => {
+        <TextField id="heartbeat-basic" defaultValue={configRef.current['heartbeat']} label={<FormattedMessage id={'setting.adv.heartbeat'} />} variant="outlined" onChange={(event) => {
           configRef.current['heartbeat'] = event.target.value
         }} />
-        <TextField id="preview_timeout-basic" defaultValue={configRef.current['preview_timeout']} label="preview_timeout" variant="outlined" onChange={(event)=>{
+        <TextField id="preview_timeout-basic" defaultValue={configRef.current['preview_timeout']} label={<FormattedMessage id={'setting.adv.preview_timeout'} />} variant="outlined" onChange={(event)=>{
           configRef.current['preview_timeout'] = event.target.value
         }} />
       </div>
     )
   }
-  const [advConfigNode, setAdvConfigNode] = useState()
-
-  useEffect(() => {
-    // componentDidMount is here!
-    // componentDidUpdate is here!
-
-    // ipc register
-    ipc.on('setLang', (event, lang) => {
-      console.log('setLang: ' + lang)
-      if (lang === 'zh-TW') {
-        setLocale('zh-TW')
-      } else {
-        setLocale('en')
-      }
-    })
-
-    ipc.on('getConfig_callback', (event, config) => {
-
-      console.log('config: ' + JSON.stringify(config)) 
-      configRef.current = config
-      setLocale(configRef.current['lang'])
-      setOutputArgsNode(renderOutputArgsNode(configRef.current['output']['format']))
-      setAdvConfigNode(renderAdvConfigNode())
-    })
-
-    ipc.send('getConfig')
-
-    return () => {
-      // componentWillUnmount is here!
-
-    }
-  }, [])
-
+  const [advConfigNode, setAdvConfigNode] = useState(renderAdvConfigNode())
 
   return (
     <StylesProvider injectFirst>
@@ -110,7 +100,7 @@ function Setting() {
         <MuiThemeProvider theme={createMuiTheme({ palette: { primary: blue, secondary: lightBlue } })}>
           <div className={settingStyle.setting}>
             <div className={settingStyle.container}>
-              <h1 className={settingStyle.containerTitle}><span className={settingStyle.containerTitleSpan}>&nbsp;Output&nbsp;</span></h1>
+              <h1 className={settingStyle.containerTitle}><span className={settingStyle.containerTitleSpan}>&nbsp;<FormattedMessage id={'setting.output'} />&nbsp;</span></h1>
               <div className={settingStyle.outputBlock}>
                 <FormControl variant="outlined" className={settingStyle.outputSelect}>
                   <InputLabel htmlFor="output-select"><FormattedMessage id={'setting.output.format'} /></InputLabel>
@@ -137,19 +127,54 @@ function Setting() {
               </div>
             </div>
             <div className={settingStyle.container}>
-              <h1 className={settingStyle.containerTitle}><span className={settingStyle.containerTitleSpan}>&nbsp;Advanced&nbsp;</span></h1>
+              <h1 className={settingStyle.containerTitle}><span className={settingStyle.containerTitleSpan}>&nbsp;<FormattedMessage id={'setting.adv'} />&nbsp;</span></h1>
               {advConfigNode}
             </div>
           </div>
           <div className={settingStyle.settingButtons}>
             <Button variant="contained" color="primary" className={settingStyle.button} onClick={() => {
 
-              console.log(configRef.current)
+              // input valid check
+              let heartbeat = parseInt(configRef.current['heartbeat'])
+              let preview_timeout = parseInt(configRef.current['preview_timeout'])
+              if (!heartbeat || heartbeat < HEART_BEAT_MIN){
+                popModalWindow(<FormattedMessage id={'setting.adv.heartbeat.error'} />)
+                return
+              }
+              if (!preview_timeout || preview_timeout < PREVIEW_TIMEOUT_MIN){
+                popModalWindow(<FormattedMessage id={'setting.adv.preview_timeout.error'} />)
+                return
+              }
+
+              if(ipc.sendSync('saveConfig', configRef.current)){
+                popModalWindow(<FormattedMessage id={'setting.save.success'} />)
+              }
+              else{
+                popModalWindow(<FormattedMessage id={'setting.save.failed'} />)
+              }
 
             }}><FormattedMessage id={'settingPanel.ok'} /></Button>
             <div></div>
-            <Button variant="contained" color="primary" className={settingStyle.button} onClick={()=>{}}><FormattedMessage id={'settingPanel.cancel'} /></Button>
+            <Button variant="contained" color="primary" className={settingStyle.button} onClick={()=>{
+              remote.getCurrentWindow().close()
+            }}><FormattedMessage id={'settingPanel.cancel'} /></Button>
           </div>
+          <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            className={settingStyle.modal}
+            open={openModal}
+            onClose={() => { setOpenModal(false) }}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500,
+            }}
+          >
+            <Fade in={openModal}>
+              {modalNode}
+            </Fade>
+          </Modal>
         </MuiThemeProvider>
       </IntlProvider>
     </StylesProvider>

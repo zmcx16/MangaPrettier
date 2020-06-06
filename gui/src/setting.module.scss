@@ -57,3 +57,17 @@ $backgroud-color: floralwhite;
 .button{
   min-width: 80px;
 }
+
+.modal{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 40px;
+}
+
+.modalWindow{
+  min-width: 300px;
+  padding: 30px;
+  background: azure;
+  text-align: center;
+}
