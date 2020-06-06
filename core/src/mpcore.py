@@ -14,7 +14,7 @@ import threading
 from image_enhance import ImageEnhance
 from blend import Blend
 from levels import Levels
-from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey
+from core_def import CoreReturn, CoreModeKey, CoreTaskKey, CoreTaskCmdKey, OutputKey
 
 
 class MangaPrettierCore(object):
@@ -86,6 +86,7 @@ class MangaPrettierCore(object):
                 output_folder_name = datetime.now().strftime("%Y%m%d-%H%M%S")
                 images_path = param[CoreTaskKey.PARAMETER][CoreTaskKey.IMAGES_PATH]
                 effects = param[CoreTaskKey.PARAMETER][CoreTaskKey.EFFECTS]
+                output = param[CoreTaskKey.PARAMETER][CoreTaskKey.OUTPUT]
 
                 for image_i in range(len(images_path)):
 
@@ -113,9 +114,20 @@ class MangaPrettierCore(object):
                         mode = MangaPrettierCore.ModeDict[config[CoreTaskKey.TYPE]]
                         image = mode.run(image, config, False).copy()
 
-                    image = Image.fromarray(image).convert('RGB')
-                    #image.save(os.path.splitext(output_path)[0]+'.png', format='png')
-                    image.save(os.path.splitext(output_path)[0] + '.jpg', format='jpeg', quality=95, optimize=True)
+                    if output[OutputKey.FORMAT] == OutputKey.PNG:
+                        image = Image.fromarray(image).convert('RGBA')
+                        image.save(os.path.splitext(output_path)[0]+'.png', format='png',
+                                   compress_level=output[OutputKey.COMPRESS_LEVEL], optimize=output[OutputKey.OPTIMIZE])
+                    elif output[OutputKey.FORMAT] == OutputKey.JPEG:
+                        image = Image.fromarray(image).convert('RGB')
+                        image.save(os.path.splitext(output_path)[0] + '.jpg', format='jpeg',
+                                   quality=output[OutputKey.QUALITY], optimize=output[OutputKey.OPTIMIZE])
+                    elif output[OutputKey.FORMAT] == OutputKey.BMP:
+                        image = Image.fromarray(image).convert('RGB')
+                        image.save(os.path.splitext(output_path)[0] + '.bmp', format='bmp')
+                    else:
+                        image = Image.fromarray(image).convert('RGB')
+                        image.save(os.path.splitext(output_path)[0] + '.jpg', format='jpeg')
 
                     # --------------------
 

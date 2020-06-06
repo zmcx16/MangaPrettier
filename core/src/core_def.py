@@ -26,6 +26,7 @@ class CoreTaskKey:
     SOURCE = 'src'
     TYPE = 'type'
     EFFECTS = 'effects'
+    OUTPUT = 'output'
     TASK_ID = 'task_id'
     SHOW = 'show'
     TASK = 'task'
@@ -46,6 +47,19 @@ class CoreTaskCmdKey:
     RUN_TASK_ASYNC = 'run_task_async'
     GET_TASK_RESULT = 'get_task_result'
     STOP_TASK = 'stop_task'
+
+
+class OutputKey:
+    FORMAT = 'format'
+
+    # format
+    PNG = 'PNG'
+    JPEG = 'JPEG'
+    BMP = 'BMP'
+
+    COMPRESS_LEVEL = 'compress_level'
+    QUALITY = 'quality'
+    OPTIMIZE = 'optimize'
 
 
 class BlendKey:

@@ -184,7 +184,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
   // run task
   const task_heartbeat = useRef(0)
   
-  const runTask = (imgs_path, effects) => {
+  const runTask = (imgs_path, effects, output) => {
 
     setProgressBar(0)
 
@@ -196,6 +196,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
           task: 'batch',
           param: {
             imgs_path: imgs_path,
+            output: output,
             effects: effects
           }
         }
@@ -351,7 +352,7 @@ function SettingPanel({ settingPanelRef, appAPI, filesPanelAPI, previewImagePane
                 taskRunningRef.current = !taskRunningRef.current
                 setTaskRunningUI()
                 if (taskRunningRef.current) {
-                  runTask(imgs_path, effects)
+                  runTask(imgs_path, effects, config['output'])
                 }
               }
 
