@@ -22,7 +22,7 @@ function PNG({ configRef }) {
         <FormattedMessage id={"setting.output.png.compress_level"} />
       </Typography>
       <Slider
-        defaultValue={75}
+        defaultValue={outputRef.current.compress_level}
         getAriaValueText={(value) => { return value }}
         aria-labelledby={"compress_level-slider"}
         valueLabelDisplay="auto"

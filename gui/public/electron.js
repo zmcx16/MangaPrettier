@@ -480,5 +480,6 @@ ipc.on('exportEffects', (event, data) => {
 
 ipc.on('saveConfig', (event, data) => {
   let ret = saveDataSync(CONFIG_FILE_NAME, data)
+  config = Object.assign({}, data)
   event.returnValue = ret
 })

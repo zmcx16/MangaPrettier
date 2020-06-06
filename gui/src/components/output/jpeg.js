@@ -20,7 +20,7 @@ function JPEG({ configRef }) {
         <FormattedMessage id={"setting.output.jpeg.quality"} />
       </Typography>
       <Slider
-        defaultValue={75}
+        defaultValue={outputRef.current.quality}
         getAriaValueText={(value) => { return value }}
         aria-labelledby={"quality-slider"}
         valueLabelDisplay="auto"
