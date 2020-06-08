@@ -41,5 +41,11 @@ Note: The Pyinstaller builds is not fully static([issue](https://stackoverflow.c
 
 ![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_00-color-levels.png)
 
+
+# Note
+This tool is personal use only. convert file means the date information broken, please don't share & spread out the modified files.
+Books Scanning is based on professional technology to keep the largest information reserve into a digital file, if you want to share it, please use the original information to share it with others.
+
+
 # License
 This project is licensed under the terms of the MIT license.
