@@ -34,12 +34,12 @@ Note: The Pyinstaller builds is not fully static([issue](https://stackoverflow.c
 # Demo2
 ![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_02.jpg)
 
-![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_02-multiply.png)
+![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_02-color-levels.jpg)
 
 # Demo3
 ![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_00.jpg)
 
-![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_00-color-levels.png)
+![image](https://github.com/zmcx16/MangaPrettier/blob/master/demo/MachikadoMazoku_00-blend-enhance.jpg)
 
 
 # Note
