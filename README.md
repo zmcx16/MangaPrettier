@@ -4,7 +4,7 @@
 
 
 # Make old / low contrast / low brightness Manga image to clear and comfortable
-Image processing is hard, and the photoshop may difficult to common users, the MangaPrettier supply some simple process image features and easy use for manga image batch processing.
+MangaPrettier is an image enhancement tool designed for manga lovers, improving the clarity and readability of old, low-contrast, or dim manga scans. It features level adjustments, contrast and brightness tuning, sharpness enhancement, and blending effects like multiply and soft light. It streamlines manga image optimization for a better reading experience.
 
 # Features
 1. Color Levels
